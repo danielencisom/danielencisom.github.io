@@ -1,0 +1,690 @@
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo img {
+    width: 150px;
+}
+
+nav ul {
+    list-style-type: none;
+    display: flex;
+}
+
+nav ul li {
+    margin-right: 20px;
+}
+
+.banner {
+    text-align: center;
+    justify-content: space-around;
+    background-image: url('image/bannerMovistar.jpg');
+    background-position: center;
+    background-size:cover;
+    padding: 120px;
+    display: flex;
+}
+
+.banner h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.banner p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.banner .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.banner .btn:hover {
+    background-color: #0056b3;
+}
+
+.highlights {
+    display: flex;
+    justify-content: space-around;
+    padding: 50px 0;
+}
+
+.highlight {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+}
+
+.highlight h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.highlight p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.highlight a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.highlight a:hover {
+    background-color: #0056b3;
+}
+
+.offers {
+    display: flex;
+    justify-content: space-around;
+    padding: 50px 0;
+    color: black;
+    font-weight: bold;
+}
+
+.offer {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 45%;
+}
+
+.offer h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.offer p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.offer a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.offer a:hover {
+    background-color: #0056b3;
+}
+
+.help {
+    background-color: #f8f9fa;
+    padding: 50px 0;
+    text-align: center;
+}
+
+.help h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.help p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.help a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.help a:hover {
+    background-color: #0056b3;
+}
+
+footer {
+    background-color: #007bff;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+.social-links {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.social-links li {
+    display: inline;
+    margin-right: 10px;
+}
+
+.social-links li:last-child {
+    margin-right: 0;
+}
+
+.social-links img {
+    width: 30px;
+    height: 30px;
+}
+
+.contact-info p {
+    margin-bottom: 10px;
+}
+
+.contact-info a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.contact-info a:hover {
+    text-decoration: underline
+}
+
+.divplan{
+    
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/FondoTelefonia.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divalta{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/FondoVelocidad.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+
+.divtv{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/FondoTV.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+.divplan h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+.divalta h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+.divtv h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divplan p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+.divalta p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+.divtv p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divplan a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+.divalta a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+.divtv a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divplan a:hover {
+    background-color: #0056b3;
+}
+.divalta a:hover {
+    background-color: #0056b3;
+}
+.divtv a:hover {
+    background-color: #0056b3;
+}
+
+
+
+.divmitad {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 45%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoOfertas.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divmitad h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divmitad p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divmitad a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divmitad a:hover {
+    background-color: #0056b3;
+}
+
+
+
+.divilim {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 45%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoOfertas.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divilim h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divilim p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divilim a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divilim a:hover {
+    background-color: #0056b3;
+}
+
+.mission {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 27%;
+    margin-right: 20%;
+}
+
+.mission-text {
+    width: 50%;
+    padding: 20px;
+    text-align: justify;
+}
+
+.mission-image {
+    width: 90%;
+    padding: 20px;
+}
+
+.mission-image img {
+    max-width: 70%;
+    height: auto;
+}
+
+
+.servicios{
+    display: flex;
+    flex-direction: column; /* Cambiar la dirección a columna */
+    align-items: center; /* Centrar los elementos en el eje transversal */
+    padding: 50px 0;
+}
+
+
+.divfija{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoFijo.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divfija h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divfija p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divfija a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divfija a:hover {
+    background-color: #0056b3;
+}
+
+
+
+.divtvv{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoTV2.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divtvv h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divtvv p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divtvv a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divtvv a:hover {
+    background-color: #0056b3;
+}
+
+
+.divpre{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoPre.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divpre h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divpre p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divpre a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divpre a:hover {
+    background-color: #0056b3;
+}
+
+
+
+.divem{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoEmp.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divem h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divem p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divem a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divem a:hover {
+    background-color: #0056b3;
+}
+
+
+.divnov{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoNov.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divnov h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divnov p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divnov a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divnov a:hover {
+    background-color: #0056b3;
+}
+
+
+.divinter{
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+
+    justify-content: space-around;
+    background-image: url('image/fondoInternet.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
+    background-position: center; /* Centra la imagen de fondo dentro del div */
+    padding: 50px;
+}
+
+.divinter h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.divinter p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.divinter a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.divinter a:hover {
+    background-color: #0056b3;
+}
