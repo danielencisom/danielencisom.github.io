@@ -688,3 +688,9 @@ footer {
 .divinter a:hover {
     background-color: #0056b3;
 }
+.ubicacion{
+    display: flex;
+    text-align: center;
+    align-items: center;
+    align-content: center;
+}
