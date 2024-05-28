@@ -7,7 +7,7 @@ body {
 
 a {
     text-decoration: none;
-    color: white;
+    color: black;
 }
 
 a:hover {
@@ -15,8 +15,9 @@ a:hover {
 }
 
 header {
-    background-color: #007bff;
-    color: #fff;
+    background-color: #F2F2F2;
+    color: black;
+    font-size: 160%;
     padding: 10px;
     display: flex;
     justify-content: space-between;
@@ -59,8 +60,8 @@ nav ul li {
 .banner .btn {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: #F2F2F2;
+    color: #0D0D0D;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -140,7 +141,7 @@ nav ul li {
 .offer a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: black;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -171,8 +172,8 @@ nav ul li {
 .help a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -295,8 +296,8 @@ footer {
 .divplan a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -305,8 +306,8 @@ footer {
 .divalta a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -315,8 +316,8 @@ footer {
 .divtv a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -362,8 +363,8 @@ footer {
 .divmitad a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -403,8 +404,8 @@ footer {
 .divilim a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -475,8 +476,8 @@ footer {
 .divfija a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -516,8 +517,8 @@ footer {
 .divtvv a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -556,8 +557,8 @@ footer {
 .divpre a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -597,8 +598,8 @@ footer {
 .divem a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -637,8 +638,8 @@ footer {
 .divnov a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -677,8 +678,8 @@ footer {
 .divinter a {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: black;
+    color: #F2F2F2;
     border: none;
     border-radius: 5px;
     font-size: 16px;
