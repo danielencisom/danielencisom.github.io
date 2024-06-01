@@ -773,7 +773,7 @@ form {
     width: 400px;
     margin: 0 auto;
     text-align: left;
-    padding: 20px;
+    padding: 40px;/*modificado por carlox*/
     border: 1px solid #ccc;
     border-radius: 5px;
 }
@@ -803,5 +803,99 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+/* actualizaciones de carlos */
+.servicios-externo{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 55px;
+}
+
+.servicios-externo-remoto{
+    margin-right: 15%;
+    margin-left: 15%;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 18px;
+}
+
+.highlightsdomi{
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    background: linear-gradient(to right, #242481, #1f3ea3);
+    margin-left: 5%;
+    margin-right: 5%;
+    border-radius: 8px;
+}
+
+img.domicilioimgtec{
+    width: auto;
+    height: 358px;
+    margin-left: 5%;
+    margin: 2%;
+    border-radius: 8px;
+}
+
+img.domicilioimgmini{
+    border-radius: 8px;
+}
+
+.highlightsDesc {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    padding: 50px 20px;
+}
+
+.descuento {
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
+    margin: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.descuento img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.descuento h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.descuento p {
+    font-size: 16px;
+    margin-bottom: 20px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.descuento .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #00008B;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.descuento .btn:hover {
     background-color: #0056b3;
 }
