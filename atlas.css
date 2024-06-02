@@ -576,7 +576,7 @@ hr{
         border-radius: 5px;
         width: 464px;
         height: 314px;
-        background-image: url('image/fondoInstalacion.png');
+        background-image: url('image/software2.png');
         background-size: cover;
         background-position: center;
         margin-bottom: 20px;
@@ -612,7 +612,7 @@ hr{
     border-radius: 5px;
     width: 464px;
     height: 314px;
-    background-image: url('image/fondoRedes2.png');
+    background-image: url('image/fondoParaRedes.png');
     background-size: cover;
     background-position: center;
     margin-bottom: 20px;
@@ -651,7 +651,7 @@ hr{
     border-radius: 5px;
     width: 464px;
     height: 314px;
-    background-image: url('image/antivirusFondo.png');
+    background-image: url('image/aea22.png');
     background-size: cover;
     background-position: center;
     margin-bottom: 20px;
