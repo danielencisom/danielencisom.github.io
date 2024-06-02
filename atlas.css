@@ -308,18 +308,15 @@ footer {
     text-decoration: underline
 }
 
-.divplan{
-
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 30%;
-
-    justify-content: space-around;
-    background-image: url('image/foto1.jpg'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
-    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
-    background-position: center; /* Centra la imagen de fondo dentro del div */
-    padding: 50px;
+.divplanImage{
+        text-align: right;
+        border-radius: 5px;
+        width: 464px;
+        height: 314px;
+        background-image: url('image/foto1.jpg');
+        background-size: cover;
+        background-position: center;
+        margin-bottom: 20px;
 }
 
 .divalta{
@@ -522,27 +519,29 @@ footer {
 
 .servicios{
     display: flex;
-    flex-direction: column; /* Cambiar la dirección a columna */
-    align-items: center; /* Centrar los elementos en el eje transversal */
-    padding: 50px 0;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 
-.divfija{
-    text-align: center;
-    border: 1px solid #ccc;
+.divFija{
+        text-align: left;
+        border-radius: 20px;
+        width: 30%;
+        padding: 10px 30px 30px;
+        background-color: rgba(0,0,0,0.3);
+        font-size: 24px;
+        margin-bottom: 20px;
+}
+
+.divFijaImage{
+    text-align: right;
     border-radius: 5px;
-    width: 30%;
-
-    justify-content: space-around;
-    background-image: url('image/fondoRepair.jpg'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
-    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
-    background-position: center; /* Centra la imagen de fondo dentro del div */
-    padding: 50px;
-}
-
-.divfija h3 {
-    font-size: 24px;
+    width: 464px;
+    height: 314px;
+    background-image: url('image/fondoRepair.jpg');
+    background-size: cover;
+    background-position: center;
     margin-bottom: 20px;
 }
 
@@ -566,19 +565,21 @@ footer {
     background-color: #0056b3;
 }
 
+hr{
+    border: black;
+    solid-color: black;
+}
 
+.divtvvImage{
 
-.divtvv{
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 30%;
-
-    justify-content: space-around;
-    background-image: url('image/fondoInstalacion.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
-    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
-    background-position: center; /* Centra la imagen de fondo dentro del div */
-    padding: 50px;
+        text-align: right;
+        border-radius: 5px;
+        width: 464px;
+        height: 314px;
+        background-image: url('image/fondoInstalacion.png');
+        background-size: cover;
+        background-position: center;
+        margin-bottom: 20px;
 }
 
 .divtvv h3 {
@@ -606,19 +607,17 @@ footer {
     background-color: #0056b3;
 }
 
-
-.divpre{
-    text-align: center;
-    border: 1px solid #ccc;
+.divpreImage{
+    text-align: right;
     border-radius: 5px;
-    width: 30%;
-
-    justify-content: space-around;
-    background-image: url('image/fondoRedes2.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
-    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
-    background-position: center; /* Centra la imagen de fondo dentro del div */
-    padding: 50px;
+    width: 464px;
+    height: 314px;
+    background-image: url('image/fondoRedes2.png');
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 20px;
 }
+
 
 .divpre h3 {
     font-size: 24px;
@@ -647,19 +646,16 @@ footer {
 
 
 
-.divem{
-    text-align: center;
-    border: 1px solid #ccc;
+.divemImage{
+    text-align: right;
     border-radius: 5px;
-    width: 30%;
-
-    justify-content: space-around;
-    background-image: url('image/antivirusFondo.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
-    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
-    background-position: center; /* Centra la imagen de fondo dentro del div */
-    padding: 50px;
+    width: 464px;
+    height: 314px;
+    background-image: url('image/antivirusFondo.png');
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 20px;
 }
-
 .divem h3 {
     font-size: 24px;
     margin-bottom: 20px;
@@ -685,18 +681,15 @@ footer {
     background-color: #0056b3;
 }
 
-
-.divnov{
-    text-align: center;
-    border: 1px solid #ccc;
+.divnovImage{
+    text-align: right;
     border-radius: 5px;
-    width: 30%;
-
-    justify-content: space-around;
-    background-image: url('image/fondoNov.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
-    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
-    background-position: center; /* Centra la imagen de fondo dentro del div */
-    padding: 50px;
+    width: 464px;
+    height: 314px;
+    background-image: url('image/fondoNov.png');
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 20px;
 }
 
 .divnov h3 {
@@ -724,24 +717,35 @@ footer {
     background-color: #0056b3;
 }
 
+.serviCont{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    text-align: center;
+    padding: 0 0;
+}
 
 .divinter{
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    text-align: left;
+    border-radius: 20px;
     width: 30%;
-
-    justify-content: space-around;
-    background-image: url('image/mantenimiento.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
-    background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
-    background-position: center; /* Centra la imagen de fondo dentro del div */
-    padding: 50px;
-}
-
-.divinter h3 {
+    padding: 10px 30px 30px;
     font-size: 24px;
     margin-bottom: 20px;
+    background-color: rgba(0,0,0,0.3);
 }
+
+.divinterImage{
+    text-align: right;
+    border-radius: 5px;
+    width: 464px;
+    height: 314px;
+    background-image: url('image/mantenimiento.png');
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 20px;
+}
+
 
 .divinter p {
     font-size: 16px;
