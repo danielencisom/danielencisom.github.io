@@ -535,7 +535,7 @@ footer {
     width: 30%;
 
     justify-content: space-around;
-    background-image: url('image/fondoFijo.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-image: url('image/fondoRepair.jpg'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
     background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
     background-position: center; /* Centra la imagen de fondo dentro del div */
     padding: 50px;
@@ -575,7 +575,7 @@ footer {
     width: 30%;
 
     justify-content: space-around;
-    background-image: url('image/fondoTV2.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-image: url('image/fondoInstalacion.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
     background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
     background-position: center; /* Centra la imagen de fondo dentro del div */
     padding: 50px;
@@ -614,7 +614,7 @@ footer {
     width: 30%;
 
     justify-content: space-around;
-    background-image: url('image/fondoPre.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-image: url('image/fondoRedes2.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
     background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
     background-position: center; /* Centra la imagen de fondo dentro del div */
     padding: 50px;
@@ -654,7 +654,7 @@ footer {
     width: 30%;
 
     justify-content: space-around;
-    background-image: url('image/fondoEmp.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-image: url('image/antivirusFondo.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
     background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
     background-position: center; /* Centra la imagen de fondo dentro del div */
     padding: 50px;
@@ -732,7 +732,7 @@ footer {
     width: 30%;
 
     justify-content: space-around;
-    background-image: url('image/fondoInternet.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
+    background-image: url('image/mantenimiento.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
     background-size: cover; /* Ajusta el tamaño de la imagen de fondo para cubrir todo el div */
     background-position: center; /* Centra la imagen de fondo dentro del div */
     padding: 50px;
