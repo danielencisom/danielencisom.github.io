@@ -318,7 +318,18 @@ footer {
         background-position: center;
         margin-bottom: 20px;
 }
+.divplan{
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 30%;
 
+    justify-content: space-around;
+    background-image: url('image/fondo2p2.png');
+    background-size: cover;
+    background-position: center;
+    padding: 50px;
+}
 .divalta{
     text-align: center;
     border: 1px solid #ccc;
