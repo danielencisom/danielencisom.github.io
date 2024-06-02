@@ -71,6 +71,15 @@ footer div div div div{
     unicode-bidi: isolate;
 }
 
+.mapa .normal {
+    color: white;
+    text-decoration: none;
+}
+
+.mapa .normal:hover {
+    text-decoration: underline;
+}
+
 footer ul li {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 12px;
