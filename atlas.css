@@ -6,13 +6,66 @@ body {
     padding: 0;
 }
 
-.banner {
-    background: linear-gradient(to top, #1E90FF, #00008B);
-    color: white;
-    padding: 20px;
-    text-align: center;
-    font-size: 150%;
+.princi {
+    display: flex;
+    height: 600px; /* Altura fija para el banner */
 }
+.texto {
+    flex: 1;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.86), rgba(11, 11, 11, 1));
+    color: white;
+    display: block;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    font-size: 34px;
+}
+.imagen {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+.imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.imagen::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 255, 0.3), rgba(0, 0, 0, 0.8));
+    z-index: 1;
+    pointer-events: none;
+}
+.imagen img {
+    position: relative;
+    z-index: 0;
+}
+
+.deggg {
+    width: 100%;
+    height: 700px;
+    position: relative;
+    overflow: hidden;
+    background-image: url("image/degradado.png");
+}
+
+.banner {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgb(0, 0, 0);
+}
+.banner img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 header a, header nav {
     position: relative;
     z-index: 2;
@@ -119,14 +172,6 @@ nav ul {
 
 nav ul li {
     margin-right: 20px;
-}
-
-.banner {
-    justify-content: space-around;
-    background-image: url("image/servicio tecnico.jpg");
-    background-size:cover;
-    padding: 120px;
-    height: 300px;
 }
 
 .banner h2 {
@@ -236,7 +281,7 @@ nav ul li {
 }
 
 .help {
-    background-color: #f8f9fa;
+    background-color: rgb(227, 221, 255);
     padding: 50px 0;
     text-align: center;
 }
