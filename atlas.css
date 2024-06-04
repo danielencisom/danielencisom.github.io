@@ -993,3 +993,73 @@ img.domicilioimgmini{
 .descuento .btn:hover {
     background-color: #0056b3;
 }
+
+/*CODE LARA*/
+/*EDITADO HOY*/
+.mission {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 14%;
+    margin-right: 14%;
+}
+
+.mission-text {
+    width: 50%;
+    padding: 20px;
+    padding-top: 0;
+    text-align: justify;
+    border-style: double;
+    margin: 1% 1% 1% 1%;
+    
+}
+
+.titleValo {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    text-align: left;
+    margin-left: 3.3%;
+    font-size: 190%;
+}
+
+.valoMayor {
+    display: flex;
+    flex-direction: row;
+}
+
+.valo1 {
+    /*background-color: green;*/
+    margin: 1%;
+}
+
+.valo2 {
+    /* background-color: lightblue; */
+    margin: 1%;
+    margin-left: 5%;
+}
+
+.titis {
+    text-decoration: underline;
+}
+
+.noSomos {
+    border-style:double;
+    background: linear-gradient(to right, #00008B, #000000);
+    text-align: center;
+    color: white;
+}
+
+@font-face {
+    font-family: Battipaglia;
+    src: url('fuente/Battipaglia.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.textPrueba {
+    font-family: Battipaglia, consolas;
+    font-size: 300%;
+    margin-bottom: -2%;
+}
+
+/*EDITADO HOY FIN*/
