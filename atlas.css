@@ -365,7 +365,8 @@ footer {
     text-align: center;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 30%;
+    width: 25%;
+    height: auto;
 
     justify-content: space-around;
     background-image: url('image/logoremoto.png');
@@ -378,6 +379,8 @@ footer {
     border: 1px solid #ccc;
     border-radius: 5px;
     width: 30%;
+    height: auto;
+
 
     justify-content: space-around;
     background-image: url('image/fondo2p2.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
@@ -392,6 +395,8 @@ footer {
     border: 1px solid #ccc;
     border-radius: 5px;
     width: 30%;
+    height: auto;
+
 
     justify-content: space-around;
     background-image: url('image/FondoTV.png'); /* Reemplaza 'ruta/de/la/imagen.jpg' con la ruta de tu imagen de fondo */
