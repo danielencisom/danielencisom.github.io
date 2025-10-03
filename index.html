@@ -213,34 +213,64 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
-            margin-top: 5px; /* Reducido para mejor agrupación */
+            margin-top: 5px;
         }
-        
+
         /* FIX: Asegura que la etiqueta del responsable no se aplaste ni se rompa */
         #responsable-block label {
-            white-space: nowrap; 
+            white-space: nowrap;
         }
 
         @media (min-width: 768px) {
             .dynamic-fields {
                 grid-template-columns: 1fr 1fr;
             }
+
             /* Cuando los dos campos de persona están presentes, forzamos la apilación completa (full-width) */
-            .dynamic-fields.stacked > .form-group {
-                grid-column: 1 / -1; 
+            .dynamic-fields.stacked>.form-group {
+                grid-column: 1 / -1;
             }
         }
+
         .responsable-group {
             display: flex;
             gap: 10px;
         }
+
         .responsable-group select {
             width: 30%;
             flex-shrink: 0;
         }
-        /* El disco duro ya no está, así que este estilo no es crítico, pero se deja para campos full-width */
+
         .full-width-field {
-            grid-column: 1 / -1; 
+            grid-column: 1 / -1;
+        }
+
+        /* Estilos para mensajes de estado */
+        #message-box {
+            display: none;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .msg-error {
+            background-color: #ffeeee;
+            color: var(--danger-color);
+            border-left: 5px solid var(--danger-color);
+        }
+
+        .msg-success {
+            background-color: #e8f5e9;
+            color: var(--secondary-color);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .msg-info {
+            background-color: #e3f2fd;
+            color: var(--primary-color);
+            border-left: 5px solid var(--primary-color);
         }
     </style>
 </head>
@@ -251,8 +281,7 @@
         <h1>REGISTRO DE EQUIPOS DE CÓMPUTO</h1>
 
         <!-- Mensaje para errores (sustituto de alert) -->
-        <div id="message-box" class="card"
-            style="display:none; background-color: #ffeeee; color: var(--danger-color); padding: 10px;"></div>
+        <div id="message-box" class="card"></div>
 
         <!-- SECCIÓN DE INFORMACIÓN GENERAL DEL KIT -->
         <div class="card">
@@ -416,6 +445,9 @@
     <script>
         // Objeto global para encapsular toda la lógica de la aplicación
         window.app = (function () {
+            // CONSTANTE: Reemplazar con la URL de tu Google Apps Script
+            const SHEET_URL = "https://script.google.com/a/macros/mpfn.gob.pe/s/AKfycbxvN3NpDLlaaGG3hl8g76sUjJQFAvxkkttR3Pqmv037n9kEQiH-iD82byuFrkKDQoxYhw/exec"; 
+
             // Estado de la aplicación
             const state = {
                 contador: {
@@ -450,18 +482,72 @@
                 videoContainer: document.getElementById('video-container'),
                 retryBtn: document.getElementById('retry-btn'),
                 scanableInputs: document.querySelectorAll(".scanable"),
-                // Referencias añadidas en initApp:
                 tecnicoResponsable: null,
                 sede: null,
                 dependencia: null
             };
 
-            function showMessage(message) {
+            function showMessage(message, type = 'error') {
                 dom.messageBox.textContent = message;
+                dom.messageBox.className = 'card'; // Reset classes
+                dom.messageBox.classList.add(`msg-${type}`);
                 dom.messageBox.style.display = 'block';
-                setTimeout(() => {
-                    dom.messageBox.style.display = 'none';
-                }, 4000);
+                // Ocultar automáticamente si no es un mensaje de carga
+                if (type !== 'info') {
+                    setTimeout(() => {
+                        dom.messageBox.style.display = 'none';
+                    }, 4000);
+                }
+            }
+            
+            /* ---------------------------
+             * LÓGICA DE ENVÍO A GOOGLE SHEETS
+             * --------------------------- */
+            
+            function sendDataToSheet(data) {
+                // Verificar si la URL del script ha sido configurada
+                if (SHEET_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
+                    showMessage("ERROR: Por favor, configura la 'SHEET_URL' con la URL de tu Google Apps Script.", 'error');
+                    return;
+                }
+
+                showMessage("Enviando datos a Google Sheets...", 'info');
+                
+                // Convertir el array de componentes a una cadena de texto para una sola celda
+                const componentsString = data.components.map(c => 
+                    `[${c.tipo}] KIT:${c.codigoKitComp} M:${c.marca} Mo:${c.modelo} C:${c.codigo}`
+                ).join(' | ');
+
+                // Estructura final de datos para enviar
+                const payload = {
+                    timestamp: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
+                    kitCode: data.kitCode,
+                    tecnico: data.tecnico,
+                    sede: data.sede,
+                    dependencia: data.dependencia,
+                    tipoCargo: data.tipoCargo,
+                    responsableTipo: data.responsableTipo,
+                    responsableNombre: data.responsableNombre,
+                    usuarioFinal: data.usuarioFinal,
+                    componentes: componentsString
+                };
+
+                fetch(SHEET_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necesario para evitar problemas de CORS con Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(() => {
+                    // El modo 'no-cors' no permite leer la respuesta, pero asume que la petición fue enviada
+                    showMessage("¡Envío exitoso! Datos registrados en Google Sheets.", 'success');
+                })
+                .catch(error => {
+                    console.error('Error al enviar a Google Sheets:', error);
+                    showMessage("Error al intentar enviar los datos. Verifique la conexión o la URL del Script. Detalle: " + error.message, 'error');
+                });
             }
 
             /* ---------------------------
@@ -552,7 +638,7 @@
                 const codigoKitUsuario = dom.codigoKitUsuario.value;
 
                 if (!tipo || !codigo || !marca || !modelo) {
-                    showMessage("Por favor, complete todos los campos (Código, Marca y Modelo) del componente.");
+                    showMessage("Por favor, complete todos los campos (Código, Marca y Modelo) del componente.", 'error');
                     return;
                 }
 
@@ -586,48 +672,64 @@
                 const tipoCargo = dom.tipoCargo.value;
                 const nombreResponsableInput = document.getElementById('nombreResponsable');
                 const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
-                
+                const tipoResponsableInput = document.getElementById('tipoResponsable');
+
                 const isUserFinalRequired = (tipoCargo === "VOL" || tipoCargo === "TER" || tipoCargo === "SEC");
 
                 // Validación de campos generales
                 if (!dom.tecnicoResponsable.value || !dom.sede.value || !dom.dependencia.value || !tipoCargo) {
-                    showMessage("Por favor, complete los campos de Técnico, Sede, Dependencia y Tipo de Cargo.");
+                    showMessage("Por favor, complete los campos de Técnico, Sede, Dependencia y Tipo de Cargo.", 'error');
                     return;
                 }
                 
                 // Validación de campos dinámicos básicos (Solo Responsable)
                 if (!nombreResponsableInput || nombreResponsableInput.value.trim() === '') 
                 {
-                    showMessage("Debe completar el nombre del Responsable.");
+                    showMessage("Debe completar el nombre del Responsable.", 'error');
                     return;
                 }
                 
                 // Validación condicional del Usuario Final
                 if (isUserFinalRequired && (!usuarioFinalNameInput || usuarioFinalNameInput.value.trim() === '')) {
-                    showMessage("Para este Tipo de Cargo, el campo USUARIO FINAL DEL EQUIPO es obligatorio.");
+                    showMessage("Para este Tipo de Cargo, el campo USUARIO FINAL DEL EQUIPO es obligatorio.", 'error');
                     return;
                 }
 
                 if (state.componentes.length === 0) {
-                    showMessage("Debe agregar al menos un componente al KIT.");
+                    showMessage("Debe agregar al menos un componente al KIT.", 'error');
                     return;
                 }
 
                 // 1. Obtener nombres
                 const nombreResponsable = nombreResponsableInput.value.toUpperCase().trim();
                 
-                // Si el campo existe, usa su valor; si no existe, usa el nombre del responsable.
+                // Si el campo de usuario final existe, usa su valor; si no existe, usa el nombre del responsable.
                 const nombreUsuarioFinal = usuarioFinalNameInput ? usuarioFinalNameInput.value.toUpperCase().trim() : nombreResponsable;
 
-                // 2. Determinar el titular del KIT (Siempre Usuario Final si existe, sino Responsable)
+                // --- GATHER DATA FOR SUBMISSION ---
+                const submissionData = {
+                    kitCode: dom.codigoKitUsuario.value,
+                    tecnico: dom.tecnicoResponsable.options[dom.tecnicoResponsable.selectedIndex].text,
+                    sede: dom.sede.options[dom.sede.selectedIndex].text,
+                    dependencia: dom.dependencia.options[dom.dependencia.selectedIndex].text,
+                    tipoCargo: dom.tipoCargo.options[dom.tipoCargo.selectedIndex].text,
+                    responsableTipo: tipoResponsableInput.value,
+                    responsableNombre: nombreResponsable,
+                    usuarioFinal: nombreUsuarioFinal,
+                    components: state.componentes // Array of objects
+                };
+                
+                // 2. Enviar a Google Sheets
+                sendDataToSheet(submissionData);
+                
+                // 3. Mostrar resumen local
                 const finalName = nombreUsuarioFinal; 
                 const kitTitle = `${dom.codigoKitUsuario.value} - ${finalName}`;
                 
-                // Rellenar resumen
                 dom.kitFinal.textContent = kitTitle;
                 dom.componentesFinales.innerHTML = "";
 
-                // Añadir Componentes
+                // Añadir Componentes al resumen local
                 state.componentes.forEach(comp => {
                     const li = document.createElement("li");
                     li.textContent = `[${comp.tipo.toUpperCase()}] ${comp.codigoKitComp} - Marca: ${comp.marca}, Modelo: ${comp.modelo}, Código: ${comp.codigo}`;
@@ -645,7 +747,7 @@
 
             function startScanning() {
                 if (!state.activeInput) return;
-                showMessage("Escaneando... Asegúrese de que el código de barras esté visible en la cámara.");
+                showMessage("Escaneando... Asegúrese de que el código de barras esté visible en la cámara.", 'info');
 
                 dom.videoContainer.style.display = 'block';
                 dom.retryBtn.style.display = "none";
@@ -668,7 +770,7 @@
                 }, function (err) {
                     if (err) {
                         console.error(err);
-                        showMessage("Error al iniciar la cámara. Asegúrese de tener permisos y que la cámara no esté en uso.");
+                        showMessage("Error al iniciar la cámara. Asegúrese de tener permisos y que la cámara no esté en uso.", 'error');
                         stopScanning(false);
                         return;
                     }
@@ -679,7 +781,7 @@
                     if (state.scanning && state.activeInput) {
                         const result = data.codeResult.code;
                         state.activeInput.value = result.toUpperCase();
-                        showMessage("Código detectado: " + result);
+                        showMessage("Código detectado: " + result, 'success');
                         stopScanning(true);
                     }
                 });
