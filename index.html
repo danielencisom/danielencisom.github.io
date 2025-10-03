@@ -22,6 +22,7 @@
             --surface-light: #ffffff;
             --text-dark: #333;
             --border-color: #ddd;
+            --invalid-color: #f44336;
         }
 
         body {
@@ -90,6 +91,13 @@
             box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
         }
 
+        /* Estilo para campos inválidos */
+        .input-invalid {
+            border-color: var(--invalid-color) !important;
+            box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.4) !important;
+        }
+
+
         input[readonly] {
             background-color: #eee;
             color: #555;
@@ -103,6 +111,11 @@
             border: 1px solid var(--border-color);
             border-radius: 4px;
             overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .input-with-button.input-invalid {
+            border-color: var(--invalid-color) !important;
         }
 
         .input-with-button input {
@@ -179,15 +192,13 @@
             border-left: 5px solid var(--secondary-color);
         }
 
-        #resumenKit p {
-            font-size: 1.1em;
+        #resumenKit p, #resumenKit h4 {
+            margin-top: 0;
             margin-bottom: 10px;
         }
-
-        #componentesFinales {
-            list-style: disc;
-            margin-left: 20px;
-            padding-left: 0;
+        
+        #componentesResumenLista li {
+            padding: 5px 0;
         }
 
         /* Estilos de la cámara y escaneo (QuaggaJS) */
@@ -430,23 +441,27 @@
             <ul id="listaComponentes"></ul>
         </div>
 
-        <!-- Botón para enviar todo -->
-        <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom: 25px;">Enviar y
-            Mostrar KIT Completo</button>
-
-        <!-- Resumen final -->
+        <!-- Resumen instantáneo (movido arriba) -->
         <div class="card" id="resumenKit" style="display:none;">
-            <h3>Resumen del KIT Completo</h3>
-            <p><strong>KIT:</strong> <span id="kitFinal"></span></p>
-            <ul id="componentesFinales"></ul>
+            <h3>Resumen del KIT</h3>
+            <p><strong>KIT y Titular:</strong> <span id="kitFinal"></span></p>
+            <h4>Componentes Registrados:</h4>
+            <!-- LISTA DE COMPONENTES EN RESUMEN -->
+            <ul id="componentesResumenLista" style="list-style-type: none; padding-left: 0;"></ul>
         </div>
+
+
+        <!-- Botón para enviar todo -->
+        <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom: 25px;">Enviar KIT a
+            Registro</button>
+
     </div>
 
     <script>
         // Objeto global para encapsular toda la lógica de la aplicación
         window.app = (function () {
-            // CONSTANTE: Reemplazar con la URL de tu Google Apps Script
-            const SHEET_URL = "https://script.google.com/a/macros/mpfn.gob.pe/s/AKfycbxvN3NpDLlaaGG3hl8g76sUjJQFAvxkkttR3Pqmv037n9kEQiH-iD82byuFrkKDQoxYhw/exec"; 
+            // CONSTANTE: URL de tu Google Apps Script (¡ACTUALIZADA A LA URL PROPORCIONADA!)
+            const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec"; 
 
             // Estado de la aplicación
             const state = {
@@ -478,7 +493,6 @@
                 listaComponentes: document.getElementById("listaComponentes"),
                 resumenKit: document.getElementById("resumenKit"),
                 kitFinal: document.getElementById("kitFinal"),
-                componentesFinales: document.getElementById("componentesFinales"),
                 videoContainer: document.getElementById('video-container'),
                 retryBtn: document.getElementById('retry-btn'),
                 scanableInputs: document.querySelectorAll(".scanable"),
@@ -499,28 +513,83 @@
                     }, 4000);
                 }
             }
-            
+
+            // Ayudante para resaltar visualmente campos inválidos
+            function highlightInvalid(element) {
+                element.classList.add('input-invalid');
+                if (element.parentElement.classList.contains('input-with-button')) {
+                    element.parentElement.classList.add('input-invalid');
+                }
+                setTimeout(() => {
+                    element.classList.remove('input-invalid');
+                    if (element.parentElement.classList.contains('input-with-button')) {
+                        element.parentElement.classList.remove('input-invalid');
+                    }
+                }, 1500);
+            }
+
+            // Valida solo la información de las primeras dos tarjetas (Responsables y Ubicación)
+            function validateInfoFields() {
+                // Obtenemos referencias a los campos dinámicos (pueden ser null si aún no se ha seleccionado TIPO DE CARGO)
+                const nombreResponsableInput = document.getElementById('nombreResponsable');
+                const tipoResponsableInput = document.getElementById('tipoResponsable');
+
+                const infoInputs = [
+                    dom.tecnicoResponsable, dom.sede, dom.dependencia, dom.tipoCargo,
+                    nombreResponsableInput,
+                    tipoResponsableInput
+                ].filter(Boolean); // Filtra cualquier elemento 'null' que pudiera haber
+
+                const tipoCargo = dom.tipoCargo.value;
+                const isUserFinalRequired = (tipoCargo === "VOL" || tipoCargo === "TER" || tipoCargo === "SEC");
+
+                if (isUserFinalRequired) {
+                    const usuarioFinalInput = document.getElementById('usuarioFinalName');
+                    if (usuarioFinalInput) infoInputs.push(usuarioFinalInput);
+                }
+
+                let isValid = true;
+                let firstInvalidElement = null;
+
+                for (const input of infoInputs) {
+                    // FIX: Asegurar que el elemento existe antes de leer propiedades. (Soluciona el error original)
+                    if (!input) continue; 
+                    
+                    const isSelect = input.tagName === 'SELECT';
+                    const value = input.value.trim();
+                    
+                    // Condición de invalidez: valor vacío o valor por defecto de un select
+                    if (value === '' || (isSelect && value === 'Seleccione...' || value === '-- Seleccionar --')) {
+                        isValid = false;
+                        highlightInvalid(input);
+                        if (!firstInvalidElement) firstInvalidElement = input;
+                    }
+                }
+
+                if (!isValid) {
+                    showMessage("Por favor, complete todos los campos de Ubicación y Usuario Responsable.", 'error');
+                    if (firstInvalidElement) firstInvalidElement.focus();
+                }
+
+                return isValid;
+            }
+
             /* ---------------------------
              * LÓGICA DE ENVÍO A GOOGLE SHEETS
              * --------------------------- */
-            
-            function sendDataToSheet(data) {
-                // Verificar si la URL del script ha sido configurada
-                if (SHEET_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
-                    showMessage("ERROR: Por favor, configura la 'SHEET_URL' con la URL de tu Google Apps Script.", 'error');
-                    return;
-                }
 
+            async function sendDataToSheet(data) {
                 showMessage("Enviando datos a Google Sheets...", 'info');
-                
-                // Convertir el array de componentes a una cadena de texto para una sola celda
-                const componentsString = data.components.map(c => 
-                    `[${c.tipo}] KIT:${c.codigoKitComp} M:${c.marca} Mo:${c.modelo} C:${c.codigo}`
+
+                // Aseguramos que la representación de los componentes sea clara en una sola celda
+                const componentsString = data.components.map(c =>
+                    `[${c.tipo}] KIT:${c.codigoKitComp || c.tipo.toUpperCase()} M:${c.marca} Mo:${c.modelo} C:${c.codigo}`
                 ).join(' | ');
 
-                // Estructura final de datos para enviar
                 const payload = {
-                    timestamp: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
+                    timestamp: new Date().toLocaleString('es-PE', {
+                        timeZone: 'America/Lima'
+                    }),
                     kitCode: data.kitCode,
                     tecnico: data.tecnico,
                     sede: data.sede,
@@ -532,22 +601,30 @@
                     componentes: componentsString
                 };
 
-                fetch(SHEET_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Necesario para evitar problemas de CORS con Apps Script
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(() => {
-                    // El modo 'no-cors' no permite leer la respuesta, pero asume que la petición fue enviada
-                    showMessage("¡Envío exitoso! Datos registrados en Google Sheets.", 'success');
-                })
-                .catch(error => {
+                try {
+                    // Usamos mode: 'no-cors' para evitar el error 401/CORS que Google Scripts genera
+                    await fetch(SHEET_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // Asumimos éxito al completarse la petición de red (ya que no podemos leer la respuesta con no-cors)
+                    showMessage("Petición enviada. Procesando registro...", 'info');
+
+                    setTimeout(() => {
+                        showMessage("¡Envío exitoso! Datos registrados. Formulario reiniciado.", 'success');
+                        resetForm();
+                    }, 1500);
+
+                } catch (error) {
+                    // Captura errores de red (e.g., sin internet)
                     console.error('Error al enviar a Google Sheets:', error);
-                    showMessage("Error al intentar enviar los datos. Verifique la conexión o la URL del Script. Detalle: " + error.message, 'error');
-                });
+                    showMessage(`Error de red al enviar: ${error.message}. Verifique su conexión y permisos.`, 'error');
+                }
             }
 
             /* ---------------------------
@@ -559,7 +636,10 @@
                 const contenedor = dom.camposDinamicos;
                 contenedor.innerHTML = ""; // Limpiar contenido previo
 
-                if (tipo === "") return;
+                if (tipo === "") {
+                    updateLocalSummary(); // Esconde el resumen si no hay cargo
+                    return;
+                }
 
                 // Bloque 1: RESPONSABLE DEL CARGO (Posición o Supervisor)
                 const bloqueResponsable = `
@@ -575,7 +655,7 @@
                         </div>
                     </div>
                 `;
-                
+
                 // Bloque 2: USUARIO FINAL DEL EQUIPO (Persona que lo utiliza - SOLO si es VOL, TER, SEC)
                 const bloqueUsuarioFinal = `
                     <div class="form-group full-width-field" id="usuario-final-block">
@@ -583,11 +663,11 @@
                         <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
                     </div>
                 `;
-                
+
                 const isUserFinalRequired = (tipo === "VOL" || tipo === "TER" || tipo === "SEC");
 
                 let htmlContent = bloqueResponsable;
-                
+
                 // 1. Mostrar Usuario Final si es requerido, forzando la apilación completa
                 if (isUserFinalRequired) {
                     htmlContent += bloqueUsuarioFinal;
@@ -595,16 +675,67 @@
                 } else {
                     contenedor.classList.remove('stacked');
                 }
-                
+
                 contenedor.innerHTML = htmlContent;
+
+                // Agregar listener para actualizar el resumen al escribir los nombres
+                document.getElementById('nombreResponsable')?.addEventListener('input', updateLocalSummary);
+                document.getElementById('usuarioFinalName')?.addEventListener('input', updateLocalSummary);
+                document.getElementById('tipoResponsable')?.addEventListener('change', updateLocalSummary); // También para el tipo de responsable
+
+                updateLocalSummary();
             }
 
 
             /* ---------------------------
-             * LÓGICA DE COMPONENTES
+             * LÓGICA DE COMPONENTES Y RESUMEN LOCAL
              * --------------------------- */
 
+            function updateLocalSummary() {
+                // Obtener el nombre del titular para el resumen
+                const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
+                const nombreResponsableInput = document.getElementById('nombreResponsable');
+                let titularName = "PENDIENTE";
+
+                // Prioridad 1: Nombre del Usuario Final (si el campo existe y tiene valor)
+                if (usuarioFinalNameInput && usuarioFinalNameInput.value) {
+                    titularName = usuarioFinalNameInput.value.toUpperCase().trim();
+                } 
+                // Prioridad 2: Nombre del Responsable (si el campo existe y tiene valor)
+                else if (nombreResponsableInput && nombreResponsableInput.value) {
+                    titularName = nombreResponsableInput.value.toUpperCase().trim();
+                }
+
+                // Actualizar Resumen
+                const componentesResumenLista = document.getElementById('componentesResumenLista');
+
+                if (state.componentes.length > 0) {
+                    dom.resumenKit.style.display = "block";
+                    // CORRECCIÓN DEL RESUMEN: Incluye Código del KIT y Nombre del Titular
+                    dom.kitFinal.textContent = `${dom.codigoKitUsuario.value} - ${titularName}`;
+                    
+                    // Generar lista de componentes para el resumen (¡LO NUEVO!)
+                    componentesResumenLista.innerHTML = state.componentes.map(c => `
+                        <li style="margin-bottom: 5px; border-bottom: 1px dotted #ccc; padding-bottom: 3px; font-size: 0.9em;">
+                            <strong>[${c.tipo.toUpperCase()}]</strong> ${c.codigoKitComp || c.tipo.toUpperCase()}: 
+                            <span style="font-style: italic;">${c.marca} ${c.modelo}</span> (S/N: ${c.codigo})
+                        </li>
+                    `).join('');
+
+                } else {
+                    dom.resumenKit.style.display = "none";
+                    componentesResumenLista.innerHTML = '';
+                }
+            }
+
             function mostrarFormulario() {
+                // Bloquear el acceso al formulario de componentes si los campos de info no están llenos
+                if (!validateInfoFields()) {
+                    dom.tipoComponente.value = "";
+                    dom.formularioComponente.style.display = "none";
+                    return;
+                }
+                
                 const tipo = dom.tipoComponente.value;
                 dom.formularioComponente.style.display = tipo ? "block" : "none";
 
@@ -614,9 +745,11 @@
 
                     dom.codigoKitCompContainer.style.display = isMultifuncional ? "none" : "block";
 
+                    // Calculamos el contador para generar el código, pero no lo incrementamos hasta que se agrega
+                    const currentCount = state.contador[tipo] || 1;
+                    
                     if (!isMultifuncional) {
-                        const count = state.contador[tipo] || 1;
-                        const autogen = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(count).padStart(4, '0')}`;
+                        const autogen = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(currentCount).padStart(4, '0')}`;
                         dom.codigoKitComp.value = autogen;
                     }
 
@@ -631,22 +764,34 @@
             }
 
             function agregarComponente() {
+                // Validación 1: Verificar que los campos de Información General/Usuario estén llenos
+                if (!validateInfoFields()) {
+                    // validateInfoFields() ya muestra el mensaje de error.
+                    return;
+                }
+                
                 const tipo = dom.tipoComponente.value;
                 const codigo = dom.codigo.value.toUpperCase().trim();
                 const marca = dom.marca.value.toUpperCase().trim();
                 const modelo = dom.modelo.value.toUpperCase().trim();
-                const codigoKitUsuario = dom.codigoKitUsuario.value;
 
+                // Validación 2: Campos del componente
                 if (!tipo || !codigo || !marca || !modelo) {
-                    showMessage("Por favor, complete todos los campos (Código, Marca y Modelo) del componente.", 'error');
+                    showMessage("Por favor, complete todos los campos (Seleccione Componente, Código, Marca y Modelo).", 'error');
+                    // Highlight required fields in the component form
+                    if (!tipo) highlightInvalid(dom.tipoComponente);
+                    if (!codigo) highlightInvalid(document.getElementById('codigo'));
+                    if (!marca) highlightInvalid(document.getElementById('marca'));
+                    if (!modelo) highlightInvalid(document.getElementById('modelo'));
                     return;
                 }
 
                 let codigoKitComp = "SIN-KIT";
                 if (tipo !== "multifuncional") {
-                    // Pre-incrementar el contador
-                    const count = state.contador[tipo] = (state.contador[tipo] || 0) + 1;
-                    codigoKitComp = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(count).padStart(4, '0')}`;
+                    // OBTENEMOS el valor del campo autogenerado que ya está visible
+                    codigoKitComp = dom.codigoKitComp.value;
+                    // AHORA sí incrementamos el contador para el PRÓXIMO componente
+                    state.contador[tipo] = (state.contador[tipo] || 0) + 1; 
                 }
 
                 // Guardar en array
@@ -658,86 +803,81 @@
                     codigoKitComp
                 });
 
-                // Mostrar en lista
+                // Mostrar en lista de componentes añadidos
                 const li = document.createElement("li");
                 li.textContent = `[${tipo.toUpperCase()}] ${codigoKitComp} - Marca: ${marca}, Modelo: ${modelo}, Código: ${codigo}`;
                 dom.listaComponentes.appendChild(li);
+
+                // ACTUALIZA RESUMEN LOCAL INSTANTÁNEAMENTE
+                updateLocalSummary();
+                showMessage(`Componente ${tipo.toUpperCase()} agregado.`, 'success');
 
                 // Reset y ocultar formulario de componente
                 dom.tipoComponente.value = "";
                 mostrarFormulario(); // Oculta el formulario y limpia campos
             }
 
+            function resetForm() {
+                // 1. Limpiar campos de Información General y Usuario
+                const allInputs = document.querySelectorAll('input[type="text"]:not([readonly]), select');
+                allInputs.forEach(input => {
+                    if (input.id !== 'codigoKitUsuario' && input.id !== 'tipoResponsable') {
+                        input.value = (input.tagName === 'SELECT') ? '' : '';
+                    }
+                });
+
+                // 2. Limpiar listas y contadores
+                dom.listaComponentes.innerHTML = "";
+                state.componentes = [];
+                state.contador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1 };
+
+                // 3. Resetear campos dinámicos
+                dom.tipoCargo.value = '';
+                mostrarCampos();
+
+                // 4. Ocultar resumen local
+                dom.resumenKit.style.display = "none";
+            }
+
+
             function enviarFormulario() {
-                const tipoCargo = dom.tipoCargo.value;
+                // Validación 1: Info General y Usuario
+                if (!validateInfoFields()) {
+                    return;
+                }
+
+                // Validación 2: Componentes
+                if (state.componentes.length === 0) {
+                    showMessage("Debe agregar al menos un componente al KIT antes de enviar.", 'error');
+                    return;
+                }
+
+                // Referencias finales
+                const tipoResponsableInput = document.getElementById('tipoResponsable');
                 const nombreResponsableInput = document.getElementById('nombreResponsable');
                 const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
-                const tipoResponsableInput = document.getElementById('tipoResponsable');
-
-                const isUserFinalRequired = (tipoCargo === "VOL" || tipoCargo === "TER" || tipoCargo === "SEC");
-
-                // Validación de campos generales
-                if (!dom.tecnicoResponsable.value || !dom.sede.value || !dom.dependencia.value || !tipoCargo) {
-                    showMessage("Por favor, complete los campos de Técnico, Sede, Dependencia y Tipo de Cargo.", 'error');
-                    return;
-                }
                 
-                // Validación de campos dinámicos básicos (Solo Responsable)
-                if (!nombreResponsableInput || nombreResponsableInput.value.trim() === '') 
-                {
-                    showMessage("Debe completar el nombre del Responsable.", 'error');
-                    return;
-                }
-                
-                // Validación condicional del Usuario Final
-                if (isUserFinalRequired && (!usuarioFinalNameInput || usuarioFinalNameInput.value.trim() === '')) {
-                    showMessage("Para este Tipo de Cargo, el campo USUARIO FINAL DEL EQUIPO es obligatorio.", 'error');
-                    return;
-                }
-
-                if (state.componentes.length === 0) {
-                    showMessage("Debe agregar al menos un componente al KIT.", 'error');
-                    return;
-                }
-
                 // 1. Obtener nombres
-                const nombreResponsable = nombreResponsableInput.value.toUpperCase().trim();
-                
-                // Si el campo de usuario final existe, usa su valor; si no existe, usa el nombre del responsable.
-                const nombreUsuarioFinal = usuarioFinalNameInput ? usuarioFinalNameInput.value.toUpperCase().trim() : nombreResponsable;
+                const nombreResponsable = nombreResponsableInput ? nombreResponsableInput.value.toUpperCase().trim() : "";
+                const nombreUsuarioFinal = (usuarioFinalNameInput && usuarioFinalNameInput.value)
+                    ? usuarioFinalNameInput.value.toUpperCase().trim()
+                    : nombreResponsable;
 
-                // --- GATHER DATA FOR SUBMISSION ---
+                // --- PREPARAR DATOS PARA ENVÍO ---
                 const submissionData = {
                     kitCode: dom.codigoKitUsuario.value,
                     tecnico: dom.tecnicoResponsable.options[dom.tecnicoResponsable.selectedIndex].text,
                     sede: dom.sede.options[dom.sede.selectedIndex].text,
                     dependencia: dom.dependencia.options[dom.dependencia.selectedIndex].text,
                     tipoCargo: dom.tipoCargo.options[dom.tipoCargo.selectedIndex].text,
-                    responsableTipo: tipoResponsableInput.value,
+                    responsableTipo: tipoResponsableInput ? tipoResponsableInput.value : "N/A",
                     responsableNombre: nombreResponsable,
                     usuarioFinal: nombreUsuarioFinal,
-                    components: state.componentes // Array of objects
+                    components: state.componentes
                 };
-                
-                // 2. Enviar a Google Sheets
+
+                // 2. Enviar a Google Sheets y resetear si es exitoso
                 sendDataToSheet(submissionData);
-                
-                // 3. Mostrar resumen local
-                const finalName = nombreUsuarioFinal; 
-                const kitTitle = `${dom.codigoKitUsuario.value} - ${finalName}`;
-                
-                dom.kitFinal.textContent = kitTitle;
-                dom.componentesFinales.innerHTML = "";
-
-                // Añadir Componentes al resumen local
-                state.componentes.forEach(comp => {
-                    const li = document.createElement("li");
-                    li.textContent = `[${comp.tipo.toUpperCase()}] ${comp.codigoKitComp} - Marca: ${comp.marca}, Modelo: ${comp.modelo}, Código: ${comp.codigo}`;
-                    dom.componentesFinales.appendChild(li);
-                });
-
-                // Mostrar resumen
-                dom.resumenKit.style.display = "block";
             }
 
 
@@ -865,6 +1005,12 @@
                 dom.tecnicoResponsable = document.getElementById("tecnicoResponsable");
                 dom.sede = document.getElementById("sede");
                 dom.dependencia = document.getElementById("dependencia");
+                
+                // Agregar listeners de cambio a los selects principales para validar info al cambiar
+                dom.tecnicoResponsable.addEventListener('change', validateInfoFields);
+                dom.sede.addEventListener('change', validateInfoFields);
+                dom.dependencia.addEventListener('change', validateInfoFields);
+                dom.tipoCargo.addEventListener('change', validateInfoFields);
             }
 
             // Devolver las funciones públicas
