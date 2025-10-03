@@ -5,7 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Equipos de Cómputo</title>
+    <!-- Incluir una fuente moderna -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Librería de escaneo de códigos de barras compatible con iOS (QuaggaJS) -->
+    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+
     <style>
         :root {
             --primary-color: #1976D2;
@@ -31,7 +35,6 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
-            /* Centrar en pantallas grandes */
         }
 
         h1 {
@@ -87,7 +90,6 @@
             box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
         }
 
-        /* Estilo para inputs de solo lectura */
         input[readonly] {
             background-color: #eee;
             color: #555;
@@ -117,15 +119,13 @@
             font-size: 1.2em;
             transition: background-color 0.3s;
             line-height: 1;
-            /* Ajuste para centrado vertical */
         }
 
         .scan-btn:hover {
             background-color: #1565C0;
         }
 
-        .btn-action,
-        .btn-secondary {
+        .btn-action {
             border: none;
             padding: 12px 20px;
             margin-top: 15px;
@@ -135,9 +135,6 @@
             font-weight: 500;
             width: 100%;
             transition: background-color 0.3s;
-        }
-
-        .btn-action {
             background-color: var(--secondary-color);
             color: var(--surface-light);
         }
@@ -149,6 +146,12 @@
         .btn-danger {
             background-color: var(--danger-color);
             color: var(--surface-light);
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
         .btn-danger:hover {
@@ -163,7 +166,6 @@
 
         #listaComponentes li {
             background: #e3f2fd;
-            /* Azul muy claro */
             margin-bottom: 8px;
             padding: 10px;
             border-left: 5px solid var(--primary-color);
@@ -174,7 +176,6 @@
         /* Resumen Final */
         #resumenKit {
             background: #e0f2f1;
-            /* Verde muy claro */
             border-left: 5px solid var(--secondary-color);
         }
 
@@ -189,33 +190,57 @@
             padding-left: 0;
         }
 
-        /* Estilos de la cámara y escaneo */
+        /* Estilos de la cámara y escaneo (QuaggaJS) */
         #video-container {
             margin-top: 15px;
             position: relative;
             width: 100%;
-            height: 250px;
-            /* Altura fija para el video */
+            min-height: 250px;
             overflow: hidden;
             background-color: #000;
             border-radius: 4px;
         }
 
-        #video {
+        #video-container video,
+        #video-container canvas {
+            max-width: 100%;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            display: block;
         }
 
-        #retry-btn {
-            background-color: var(--danger-color);
-            color: white;
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        /* Estilos para campos dinámicos */
+        .dynamic-fields {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 5px; /* Reducido para mejor agrupación */
+        }
+        
+        /* FIX: Asegura que la etiqueta del responsable no se aplaste ni se rompa */
+        #responsable-block label {
+            white-space: nowrap; 
+        }
+
+        @media (min-width: 768px) {
+            .dynamic-fields {
+                grid-template-columns: 1fr 1fr;
+            }
+            /* Cuando los dos campos de persona están presentes, forzamos la apilación completa (full-width) */
+            .dynamic-fields.stacked > .form-group {
+                grid-column: 1 / -1; 
+            }
+        }
+        .responsable-group {
+            display: flex;
+            gap: 10px;
+        }
+        .responsable-group select {
+            width: 30%;
+            flex-shrink: 0;
+        }
+        /* El disco duro ya no está, así que este estilo no es crítico, pero se deja para campos full-width */
+        .full-width-field {
+            grid-column: 1 / -1; 
         }
     </style>
 </head>
@@ -225,26 +250,36 @@
     <div class="container">
         <h1>REGISTRO DE EQUIPOS DE CÓMPUTO</h1>
 
+        <!-- Mensaje para errores (sustituto de alert) -->
+        <div id="message-box" class="card"
+            style="display:none; background-color: #ffeeee; color: var(--danger-color); padding: 10px;"></div>
+
+        <!-- SECCIÓN DE INFORMACIÓN GENERAL DEL KIT -->
         <div class="card">
-            <h2>Información General del KIT</h2>
+            <h2>Información General del KIT y Ubicación</h2>
+
+            <!-- Código del KIT -->
             <div class="form-group">
                 <label for="codigoKitUsuario">Código del KIT:</label>
                 <input type="text" id="codigoKitUsuario" value="KIT-0001" readonly>
             </div>
 
+            <!-- Técnico Responsable de Mantenimiento -->
             <div class="form-group">
                 <label for="tecnicoResponsable">Técnico Responsable:</label>
                 <select id="tecnicoResponsable" required>
                     <option value="">Seleccione...</option>
                     <option value="CH">CARLOS HUACHO</option>
+                    <option value="RE">RUBEN ERNESTO MEZA</option>
                     <option value="JI">JOSUE IBAÑEZ CAMPOS</option>
-                    <option value="DE">DANIEL ENCISO</option>
+                    <option value="DE">DANIEL ENRIQUEZ</option>
                     <option value="OE">ODAR ENRIQUE</option>
                     <option value="SC">SANTIAGO CARPIO</option>
                     <option value="DC">DAVID COTERA</option>
                 </select>
             </div>
 
+            <!-- SEDE -->
             <div class="form-group">
                 <label for="sede">Sede:</label>
                 <select id="sede" required>
@@ -255,6 +290,7 @@
                 </select>
             </div>
 
+            <!-- DEPENDENCIA -->
             <div class="form-group">
                 <label for="dependencia">Dependencia:</label>
                 <select id="dependencia" required>
@@ -265,6 +301,42 @@
                 </select>
             </div>
         </div>
+        <!-- FIN SECCIÓN DE INFORMACIÓN GENERAL -->
+
+
+        <!-- NUEVA SECCIÓN DE INFORMACIÓN DE USUARIO Y CARGO -->
+        <div class="card">
+            <h2>Información de Usuario Responsable de KIT</h2>
+
+            <!-- TIPO DE CARGO -->
+            <div class="form-group">
+                <label for="tipoCargo">TIPO DE CARGO:</label>
+                <select id="tipoCargo" onchange="window.app.mostrarCampos()" required>
+                    <option value="">Seleccione...</option>
+                    <option value="ASD">ASISTENTE ADMINISTRATIVO</option>
+                    <option value="AFF">ASISTENTE FUNCION FISCAL</option>
+                    <option value="AUD">AUXILIAR ADMINISTRATIVO</option>
+                    <option value="COOR">COORDINADOR</option>
+                    <option value="EA">ESPECIALISTA ADMINISTRATIVO</option>
+                    <option value="FAF">FISCAL ADJUNTO FISCAL</option>
+                    <option value="OAD">OPERADOR ADMINISTRATIVO</option>
+                    <option value="PRO">PROGRAMADOR</option>
+                    <option value="SEC">SECIGRISTA</option>
+                    <option value="TAD">TECNICO ADMINISTRATIVO</option>
+                    <option value="TER">TERCERO</option>
+                    <option value="VOL">VOLUNTARIO</option>
+                </select>
+            </div>
+
+            <!-- Campos dinámicos (RESPONSABLE, USUARIO FINAL CONDICIONAL) -->
+            <div id="camposDinamicos" class="dynamic-fields">
+                <!-- Se llenará con Responsable y Usuario Final (condicional) -->
+            </div>
+        </div>
+        <!-- FIN SECCIÓN USUARIO RESPONSABLE -->
+
+
+        <!-- SECCIÓN DE REGISTRO DE COMPONENTES -->
         <div class="card">
             <h2>Registro de Componentes</h2>
 
@@ -281,24 +353,29 @@
                 </select>
             </div>
 
-            <div class="card" id="formularioComponente" style="display:none; padding: 15px; background: #f9f9f9; box-shadow: none;">
+            <!-- Formulario dinámico del componente -->
+            <div class="card" id="formularioComponente"
+                style="display:none; padding: 15px; background: #f9f9f9; box-shadow: none;">
 
                 <div class="form-group" id="codigoKitCompContainer">
                     <label for="codigoKitComp">Código del KIT del Componente:</label>
                     <input type="text" id="codigoKitComp" readonly>
                 </div>
 
+                <!-- Inputs con escáner -->
                 <div class="form-group">
                     <label>Código de barras / Nro de serie:</label>
                     <div class="input-with-button">
-                        <input id="codigo" type="text" class="scanable" placeholder="Escanea o escribe el código" autocomplete="off" />
+                        <input id="codigo" type="text" class="scanable" placeholder="Escanea o escribe el código"
+                            autocomplete="off" />
                         <button class="scan-btn" data-input-id="codigo">📷</button>
                     </div>
                 </div>
 
-                <label id="video-container" style="display: none;">
-                    <video id="video" autoplay muted playsinline></video>
-                </label>
+                <!-- Contenedor de la Cámara y Escaneo (QuaggaJS) -->
+                <div id="video-container" style="display: none;">
+                    <!-- QuaggaJS renderizará el video y el canvas aquí -->
+                </div>
                 <button id="retry-btn" class="btn-danger" style="display:none;">Volver a intentar escaneo</button>
 
                 <div class="form-group">
@@ -315,13 +392,20 @@
             </div>
 
         </div>
+        <!-- FIN SECCIÓN DE REGISTRO DE COMPONENTES -->
+
+
+        <!-- LISTA DE COMPONENTES AÑADIDOS -->
         <div class="card">
             <h3>Componentes añadidos al KIT</h3>
             <ul id="listaComponentes"></ul>
         </div>
 
-        <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom: 25px;">Enviar y Mostrar KIT Completo</button>
+        <!-- Botón para enviar todo -->
+        <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom: 25px;">Enviar y
+            Mostrar KIT Completo</button>
 
+        <!-- Resumen final -->
         <div class="card" id="resumenKit" style="display:none;">
             <h3>Resumen del KIT Completo</h3>
             <p><strong>KIT:</strong> <span id="kitFinal"></span></p>
@@ -343,12 +427,14 @@
                 },
                 componentes: [],
                 scanning: false,
-                stream: null,
                 activeInput: null,
             };
 
             // Referencias a elementos del DOM
             const dom = {
+                messageBox: document.getElementById('message-box'),
+                tipoCargo: document.getElementById('tipoCargo'),
+                camposDinamicos: document.getElementById('camposDinamicos'),
                 tipoComponente: document.getElementById("tipoComponente"),
                 formularioComponente: document.getElementById("formularioComponente"),
                 codigoKitUsuario: document.getElementById("codigoKitUsuario"),
@@ -362,13 +448,74 @@
                 kitFinal: document.getElementById("kitFinal"),
                 componentesFinales: document.getElementById("componentesFinales"),
                 videoContainer: document.getElementById('video-container'),
-                video: document.getElementById('video'),
                 retryBtn: document.getElementById('retry-btn'),
                 scanableInputs: document.querySelectorAll(".scanable"),
+                // Referencias añadidas en initApp:
+                tecnicoResponsable: null,
+                sede: null,
+                dependencia: null
             };
 
+            function showMessage(message) {
+                dom.messageBox.textContent = message;
+                dom.messageBox.style.display = 'block';
+                setTimeout(() => {
+                    dom.messageBox.style.display = 'none';
+                }, 4000);
+            }
+
             /* ---------------------------
-             * LÓGICA DE FORMULARIO
+             * LÓGICA DE CAMPOS DINÁMICOS (USUARIO FINAL)
+             * --------------------------- */
+
+            function mostrarCampos() {
+                const tipo = dom.tipoCargo.value.trim().toUpperCase();
+                const contenedor = dom.camposDinamicos;
+                contenedor.innerHTML = ""; // Limpiar contenido previo
+
+                if (tipo === "") return;
+
+                // Bloque 1: RESPONSABLE DEL CARGO (Posición o Supervisor)
+                const bloqueResponsable = `
+                    <div class="form-group full-width-field" id="responsable-block">
+                        <label for="nombreResponsable">RESPONSABLE DEL CARGO (PERSONAL:CAS-728-276):</label>
+                        <div class="responsable-group">
+                            <select id="tipoResponsable" required>
+                                <option value="728">728</option>
+                                <option value="276">276</option>
+                                <option value="CAS">CAS</option>
+                            </select>
+                            <input type="text" id="nombreResponsable" placeholder="Nombre Asignado" required />
+                        </div>
+                    </div>
+                `;
+                
+                // Bloque 2: USUARIO FINAL DEL EQUIPO (Persona que lo utiliza - SOLO si es VOL, TER, SEC)
+                const bloqueUsuarioFinal = `
+                    <div class="form-group full-width-field" id="usuario-final-block">
+                        <label for="usuarioFinalName">USUARIO FINAL DEL EQUIPO (TITULAR):</label>
+                        <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
+                    </div>
+                `;
+                
+                const isUserFinalRequired = (tipo === "VOL" || tipo === "TER" || tipo === "SEC");
+
+                let htmlContent = bloqueResponsable;
+                
+                // 1. Mostrar Usuario Final si es requerido, forzando la apilación completa
+                if (isUserFinalRequired) {
+                    htmlContent += bloqueUsuarioFinal;
+                    contenedor.classList.add('stacked');
+                } else {
+                    contenedor.classList.remove('stacked');
+                }
+                
+                contenedor.innerHTML = htmlContent;
+            }
+
+
+            /* ---------------------------
+             * LÓGICA DE COMPONENTES
              * --------------------------- */
 
             function mostrarFormulario() {
@@ -393,7 +540,7 @@
                     dom.modelo.value = "";
 
                     // Detener cualquier escaneo si se cambia de componente
-                    stopScanning();
+                    stopScanning(false);
                 }
             }
 
@@ -405,7 +552,7 @@
                 const codigoKitUsuario = dom.codigoKitUsuario.value;
 
                 if (!tipo || !codigo || !marca || !modelo) {
-                    alert("Por favor, complete todos los campos (Código, Marca y Modelo).");
+                    showMessage("Por favor, complete todos los campos (Código, Marca y Modelo) del componente.");
                     return;
                 }
 
@@ -436,15 +583,51 @@
             }
 
             function enviarFormulario() {
-                if (state.componentes.length === 0) {
-                    alert("Debe agregar al menos un componente al KIT.");
+                const tipoCargo = dom.tipoCargo.value;
+                const nombreResponsableInput = document.getElementById('nombreResponsable');
+                const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
+                
+                const isUserFinalRequired = (tipoCargo === "VOL" || tipoCargo === "TER" || tipoCargo === "SEC");
+
+                // Validación de campos generales
+                if (!dom.tecnicoResponsable.value || !dom.sede.value || !dom.dependencia.value || !tipoCargo) {
+                    showMessage("Por favor, complete los campos de Técnico, Sede, Dependencia y Tipo de Cargo.");
+                    return;
+                }
+                
+                // Validación de campos dinámicos básicos (Solo Responsable)
+                if (!nombreResponsableInput || nombreResponsableInput.value.trim() === '') 
+                {
+                    showMessage("Debe completar el nombre del Responsable.");
+                    return;
+                }
+                
+                // Validación condicional del Usuario Final
+                if (isUserFinalRequired && (!usuarioFinalNameInput || usuarioFinalNameInput.value.trim() === '')) {
+                    showMessage("Para este Tipo de Cargo, el campo USUARIO FINAL DEL EQUIPO es obligatorio.");
                     return;
                 }
 
+                if (state.componentes.length === 0) {
+                    showMessage("Debe agregar al menos un componente al KIT.");
+                    return;
+                }
+
+                // 1. Obtener nombres
+                const nombreResponsable = nombreResponsableInput.value.toUpperCase().trim();
+                
+                // Si el campo existe, usa su valor; si no existe, usa el nombre del responsable.
+                const nombreUsuarioFinal = usuarioFinalNameInput ? usuarioFinalNameInput.value.toUpperCase().trim() : nombreResponsable;
+
+                // 2. Determinar el titular del KIT (Siempre Usuario Final si existe, sino Responsable)
+                const finalName = nombreUsuarioFinal; 
+                const kitTitle = `${dom.codigoKitUsuario.value} - ${finalName}`;
+                
                 // Rellenar resumen
-                dom.kitFinal.textContent = dom.codigoKitUsuario.value;
+                dom.kitFinal.textContent = kitTitle;
                 dom.componentesFinales.innerHTML = "";
 
+                // Añadir Componentes
                 state.componentes.forEach(comp => {
                     const li = document.createElement("li");
                     li.textContent = `[${comp.tipo.toUpperCase()}] ${comp.codigoKitComp} - Marca: ${comp.marca}, Modelo: ${comp.modelo}, Código: ${comp.codigo}`;
@@ -457,82 +640,82 @@
 
 
             /* ---------------------------
-             * LÓGICA DE ESCÁNER (CÁMARA)
+             * LÓGICA DE ESCÁNER (QUAGGAJS)
              * --------------------------- */
 
-            async function startCamera() {
-                try {
-                    const videoConstraints = {
-                        facingMode: "environment"
-                    };
-                    state.stream = await navigator.mediaDevices.getUserMedia({
-                        video: videoConstraints
-                    });
-                    dom.video.srcObject = state.stream;
-                    dom.videoContainer.style.display = 'block';
-                } catch (err) {
-                    alert("Error al acceder a la cámara. Asegúrese de tener permisos: " + err.message);
-                    stopScanning();
-                }
-            }
+            function startScanning() {
+                if (!state.activeInput) return;
+                showMessage("Escaneando... Asegúrese de que el código de barras esté visible en la cámara.");
 
-            function stopCamera() {
-                if (state.stream) {
-                    state.stream.getTracks().forEach(track => track.stop());
-                    state.stream = null;
-                }
-                dom.videoContainer.style.display = 'none';
-            }
-
-            async function startScanning() {
-                state.scanning = true;
+                dom.videoContainer.style.display = 'block';
                 dom.retryBtn.style.display = "none";
-                await startCamera();
+                state.scanning = true;
 
-                // Detección de códigos de barras (depende de la implementación del navegador)
-                if ('BarcodeDetector' in window) {
-                    try {
-                        const detector = new BarcodeDetector({
-                            formats: ["code_128", "ean_13", "ean_8", "code_39", "upc_a", "upc_e"]
-                        });
-                        detect(detector);
-                    } catch (e) {
-                        console.error("BarcodeDetector no soportado con esos formatos o inicialización fallida:", e);
-                        // Fallback: mostrar un mensaje si la detección no es posible
-                        alert("El escaneo con cámara no es completamente soportado en este dispositivo/navegador. Intente ingresar el código manualmente.");
-                        stopScanning();
-                    }
-                } else {
-                    alert("El escaneo con cámara no es soportado por este navegador. Por favor, ingrese el código manualmente.");
-                    stopScanning();
-                }
-            }
-
-            function stopScanning() {
-                state.scanning = false;
-                stopCamera();
-                // Solo mostramos el botón de reintentar si había un input activo
-                if (state.activeInput) {
-                    dom.retryBtn.style.display = "block";
-                }
-            }
-
-            async function detect(detector) {
-                if (!state.scanning || !state.stream) return;
-
-                try {
-                    const barcodes = await detector.detect(dom.video);
-                    if (barcodes.length > 0 && state.activeInput) {
-                        state.activeInput.value = barcodes[0].rawValue.toUpperCase();
-                        stopScanning();
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: dom.videoContainer,
+                        constraints: {
+                            facingMode: "environment"
+                        }
+                    },
+                    decoder: {
+                        readers: ["code_128_reader", "ean_reader", "code_39_reader"]
+                    },
+                    locate: true,
+                    frequency: 10,
+                }, function (err) {
+                    if (err) {
+                        console.error(err);
+                        showMessage("Error al iniciar la cámara. Asegúrese de tener permisos y que la cámara no esté en uso.");
+                        stopScanning(false);
                         return;
                     }
-                } catch (e) {
-                    // console.log("Error de detección o no se encontró código:", e);
-                }
+                    Quagga.start();
+                });
 
-                // Continuar escaneando en el siguiente frame
-                requestAnimationFrame(() => detect(detector));
+                Quagga.onDetected(function (data) {
+                    if (state.scanning && state.activeInput) {
+                        const result = data.codeResult.code;
+                        state.activeInput.value = result.toUpperCase();
+                        showMessage("Código detectado: " + result);
+                        stopScanning(true);
+                    }
+                });
+
+                // Dibujar el recuadro de localización
+                Quagga.onProcessed(function (result) {
+                    const drawingCtx = Quagga.canvas.ctx.overlay;
+                    const drawingCanvas = Quagga.canvas.dom.overlay;
+
+                    if (result) {
+                        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
+                        if (result.codeResult && result.codeResult.code) {
+                            Quagga.ImageDebug.drawPath(result.line, {
+                                x: 'x',
+                                y: 'y'
+                            }, drawingCtx, {
+                                color: "red",
+                                lineWidth: 3
+                            });
+                        }
+                    }
+                });
+            }
+
+            function stopScanning(showRetry = true) {
+                if (!state.scanning) return;
+
+                Quagga.stop();
+                state.scanning = false;
+                dom.videoContainer.style.display = 'none';
+
+                if (showRetry && state.activeInput) {
+                    dom.retryBtn.style.display = "block";
+                } else {
+                    dom.retryBtn.style.display = "none";
+                }
             }
 
             /* ---------------------------
@@ -540,27 +723,30 @@
              * --------------------------- */
 
             function initApp() {
+                // Iniciar campos dinámicos al cargar
+                mostrarCampos();
+
                 // Configurar eventos para inputs escaneables
                 dom.scanableInputs.forEach(input => {
-                    // Forzar mayúsculas en todos los inputs de escaneo/código
                     input.addEventListener('input', () => {
                         input.value = input.value.toUpperCase();
                     });
                 });
 
-                // Configurar el evento del botón de escaneo para cada input
+                // Configurar el evento del botón de escaneo
                 document.querySelectorAll(".scan-btn").forEach(btn => {
                     const inputId = btn.getAttribute('data-input-id');
                     const input = document.getElementById(inputId);
 
                     btn.addEventListener("click", async (e) => {
-                        e.preventDefault(); // Evita el submit del formulario
-                        state.activeInput = input; // Define qué input se llenará
+                        e.preventDefault();
+                        state.activeInput = input;
 
                         if (state.scanning) {
-                            stopScanning();
+                            stopScanning(true);
                         } else {
-                            await startScanning();
+                            dom.retryBtn.style.display = "none";
+                            startScanning();
                         }
                     });
                 });
@@ -572,6 +758,11 @@
                         startScanning();
                     }
                 });
+
+                // Asignar referencias a los selects principales
+                dom.tecnicoResponsable = document.getElementById("tecnicoResponsable");
+                dom.sede = document.getElementById("sede");
+                dom.dependencia = document.getElementById("dependencia");
             }
 
             // Devolver las funciones públicas
@@ -579,7 +770,8 @@
                 initApp: initApp,
                 mostrarFormulario: mostrarFormulario,
                 agregarComponente: agregarComponente,
-                enviarFormulario: enviarFormulario
+                enviarFormulario: enviarFormulario,
+                mostrarCampos: mostrarCampos
             };
         })();
 
