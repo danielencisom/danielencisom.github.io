@@ -1,240 +1,591 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-68EW5VCFBP"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-68EW5VCFBP');
-</script>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-    <!-- Título de la página que aparece en la pestaña del navegador -->
-    <title>Atlas Perú - Soporte Técnico Profesional a Domicilio y Remoto</title>
+    <title>Registro de Equipos de Cómputo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976D2;
+            /* Azul fuerte */
+            --secondary-color: #4CAF50;
+            /* Verde para éxito/envío */
+            --danger-color: #D32F2F;
+            /* Rojo para peligro/eliminar */
+            --background-light: #f4f6f9;
+            --surface-light: #ffffff;
+            --text-dark: #333;
+            --border-color: #ddd;
+        }
 
-    <!-- Breve descripción para los motores de búsqueda -->
-    <meta name="description" content="Atlas Perú ofrece soporte técnico especializado para empresas y hogares, con servicios de reparación, mantenimiento y soporte remoto.">
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+        }
 
-    <!-- Palabras clave para SEO -->
-    <meta name="keywords" content="Soporte tecnico, Soporte a domicilio, Soporte remoto, Reparacion de hardware, Mantenimiento de equipos">
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            /* Centrar en pantallas grandes */
+        }
 
-    
-    <link rel="stylesheet" href="atlas.css">
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        h2,
+        h3 {
+            color: var(--primary-color);
+            margin-top: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .card {
+            background: var(--surface-light);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+        }
+
+        /* Estilo para inputs de solo lectura */
+        input[readonly] {
+            background-color: #eee;
+            color: #555;
+            cursor: default;
+        }
+
+        /* Contenedor del escáner */
+        .input-with-button {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .input-with-button input {
+            border: none;
+            flex-grow: 1;
+        }
+
+        .scan-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: background-color 0.3s;
+            line-height: 1;
+            /* Ajuste para centrado vertical */
+        }
+
+        .scan-btn:hover {
+            background-color: #1565C0;
+        }
+
+        .btn-action,
+        .btn-secondary {
+            border: none;
+            padding: 12px 20px;
+            margin-top: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .btn-action {
+            background-color: var(--secondary-color);
+            color: var(--surface-light);
+        }
+
+        .btn-action:hover {
+            background-color: #388E3C;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: var(--surface-light);
+        }
+
+        .btn-danger:hover {
+            background-color: #C62828;
+        }
+
+        /* Lista de componentes añadidos */
+        #listaComponentes {
+            list-style: none;
+            padding: 0;
+        }
+
+        #listaComponentes li {
+            background: #e3f2fd;
+            /* Azul muy claro */
+            margin-bottom: 8px;
+            padding: 10px;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* Resumen Final */
+        #resumenKit {
+            background: #e0f2f1;
+            /* Verde muy claro */
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        #resumenKit p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        #componentesFinales {
+            list-style: disc;
+            margin-left: 20px;
+            padding-left: 0;
+        }
+
+        /* Estilos de la cámara y escaneo */
+        #video-container {
+            margin-top: 15px;
+            position: relative;
+            width: 100%;
+            height: 250px;
+            /* Altura fija para el video */
+            overflow: hidden;
+            background-color: #000;
+            border-radius: 4px;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #retry-btn {
+            background-color: var(--danger-color);
+            color: white;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
-    
+
 <body>
 
-    <header>
-        <div class="logo">
+    <div class="container">
+        <h1>REGISTRO DE EQUIPOS DE CÓMPUTO</h1>
 
-            <!-- URLS AMIGABLES -->
-            <a href="https://danielencisom.github.io/"><img src="image/LOGO-ETICA.png" alt="Atlas Perú" style="width: 20%"></a>
-        </div>
-        <nav>
-            <ul style="color: black;">
-                <li><a href="nosotros.html">Nosotros</a></li>
-                <li><a href="servicios.html">Productos y Servicios</a></li>
-                <li><a href="contacto.html">Contacto</a></li>
-            </ul>
-        </nav>
-        <div class="logo">
-            <img src="image/LOGO-ATLAS-BLANCO.png" alt="Atlas Perú letra">
-        </div>
-    </header>
-
-    <div class="princi">
-        <div class="texto">
-            <h1 class="textPrueba">Servicio de Soporte Tecnico</h1><br>
-            <p style="font-family: Verdana, Geneva, Tahoma, sans-serif;">Servicio de soporte especializado para tu hogar, contamos con distintas modalidades de soporte.</p>
-        </div>
-
-        <div class="imagen">
-            <img src="image/tecnico.jpg" alt="tecnico">
-        </div>
-    </div>
-
-    <div class="banner" style="margin-bottom: 0; padding-bottom: 0">
-        <img src="image/Banner-atlas.png" alt="bannerA">
-    </div>
-
-    <section class="highlights" style="margin-top: 0; padding-top: 0; padding-bottom: 0">
-        <div class="divplan">
-            <div class="lamove1">
-                <h3>Soporte Técnico Vía Remota</h3>
-                <p>"Soluciona tu problema informático a distancia."</p>
+        <div class="card">
+            <h2>Información General del KIT</h2>
+            <div class="form-group">
+                <label for="codigoKitUsuario">Código del KIT:</label>
+                <input type="text" id="codigoKitUsuario" value="KIT-0001" readonly>
             </div>
-            <a href="sopTecnicoViaRemota.html">Ver más</a>
-        </div>
-        <div class="divalta">
-            <h3>Soporte técnico A Domicilio</h3>
-            <p>"Comunícate y agenda tu cita de soporte, nosotros solucionaremos los problemas de tu equipo."</p>
-            <a href="sopTecnicoADomicilio.html">Ver más</a>
-        </div>
-        <div class="divtv">
-            <h3>Promociones y descuentos festivos</h3>
-            <p>"Disfruta de los descuentos que tenemos para ti durante todo el año."</p>
-            <a href="diasFestivos.html">Ver más</a>
-        </div>
-    </section>
-    <div class="deggg">
-        <br>
-        <br>
-    <div class="highlightsyt">
 
-        <!-- URLS AMIGABLES -->
-        <iframe width="500" height="500" src="https://www.youtube.com/embed/Cc71Ad7rNX4" title="Publicidad Atlas" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    </div>
+            <div class="form-group">
+                <label for="tecnicoResponsable">Técnico Responsable:</label>
+                <select id="tecnicoResponsable" required>
+                    <option value="">Seleccione...</option>
+                    <option value="CH">CARLOS HUACHO</option>
+                    <option value="JI">JOSUE IBAÑEZ CAMPOS</option>
+                    <option value="DE">DANIEL ENCISO</option>
+                    <option value="OE">ODAR ENRIQUE</option>
+                    <option value="SC">SANTIAGO CARPIO</option>
+                    <option value="DC">DAVID COTERA</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sede">Sede:</label>
+                <select id="sede" required>
+                    <option value="">Seleccione...</option>
+                    <option value="SS12">SEDE SAENZ PEÑA 120</option>
+                    <option value="SS17">SEDE SAENZ PEÑA 175-177-181</option>
+                    <option value="SS15">SEDE SAENZ PEÑA 155-157</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="dependencia">Dependencia:</label>
+                <select id="dependencia" required>
+                    <option value="">-- Seleccionar --</option>
+                    <option value="Lima">Lima</option>
+                    <option value="Arequipa">Arequipa</option>
+                    <option value="Cusco">Cusco</option>
+                </select>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Registro de Componentes</h2>
+
+            <div class="form-group">
+                <label for="tipoComponente">Seleccionar Componente:</label>
+                <select id="tipoComponente" onchange="window.app.mostrarFormulario()">
+                    <option value="">-- Seleccionar --</option>
+                    <option value="cpu">CPU</option>
+                    <option value="laptop">Laptop</option>
+                    <option value="monitor">Monitor</option>
+                    <option value="teclado">Teclado</option>
+                    <option value="docking">Docking</option>
+                    <option value="multifuncional">Multifuncional</option>
+                </select>
+            </div>
+
+            <div class="card" id="formularioComponente" style="display:none; padding: 15px; background: #f9f9f9; box-shadow: none;">
+
+                <div class="form-group" id="codigoKitCompContainer">
+                    <label for="codigoKitComp">Código del KIT del Componente:</label>
+                    <input type="text" id="codigoKitComp" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Código de barras / Nro de serie:</label>
+                    <div class="input-with-button">
+                        <input id="codigo" type="text" class="scanable" placeholder="Escanea o escribe el código" autocomplete="off" />
+                        <button class="scan-btn" data-input-id="codigo">📷</button>
+                    </div>
+                </div>
+
+                <label id="video-container" style="display: none;">
+                    <video id="video" autoplay muted playsinline></video>
+                </label>
+                <button id="retry-btn" class="btn-danger" style="display:none;">Volver a intentar escaneo</button>
+
+                <div class="form-group">
+                    <label for="marca">Marca:</label>
+                    <input type="text" id="marca" placeholder="Marca del componente">
+                </div>
+
+                <div class="form-group">
+                    <label for="modelo">Modelo:</label>
+                    <input type="text" id="modelo" placeholder="Modelo del componente">
+                </div>
+
+                <button class="btn-action" onclick="window.app.agregarComponente()">Agregar Componente</button>
+            </div>
+
+        </div>
+        <div class="card">
+            <h3>Componentes añadidos al KIT</h3>
+            <ul id="listaComponentes"></ul>
+        </div>
+
+        <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom: 25px;">Enviar y Mostrar KIT Completo</button>
+
+        <div class="card" id="resumenKit" style="display:none;">
+            <h3>Resumen del KIT Completo</h3>
+            <p><strong>KIT:</strong> <span id="kitFinal"></span></p>
+            <ul id="componentesFinales"></ul>
+        </div>
     </div>
 
-    <section class="help">
-        <h2>¿Necesitas ayuda?</h2>
-        <p>Encuentra respuestas a tus preguntas frecuentes o contáctanos para recibir asistencia personalizada.</p>
-        <a href="contacto.html">Ir a Ayuda</a>
-    </section>
-    <br>
-    <br>
-    <br>
-    <br>
-    <div id="disqus_thread" style="margin-left: 10%; margin-right: 10%"></div>
     <script>
-        /**
-         *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-         *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
-        /*
-        var disqus_config = function () {
-        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-        };
-        */
-        (function() { // DON'T EDIT BELOW THIS LINE
-            var d = document, s = d.createElement('script');
-            s.src = 'https://trabajojonny.disqus.com/embed.js';
-            s.setAttribute('data-timestamp', +new Date());
-            (d.head || d.body).appendChild(s);
+        // Objeto global para encapsular toda la lógica de la aplicación
+        window.app = (function () {
+            // Estado de la aplicación
+            const state = {
+                contador: {
+                    cpu: 1,
+                    monitor: 1,
+                    teclado: 1,
+                    laptop: 1,
+                    docking: 1
+                },
+                componentes: [],
+                scanning: false,
+                stream: null,
+                activeInput: null,
+            };
+
+            // Referencias a elementos del DOM
+            const dom = {
+                tipoComponente: document.getElementById("tipoComponente"),
+                formularioComponente: document.getElementById("formularioComponente"),
+                codigoKitUsuario: document.getElementById("codigoKitUsuario"),
+                codigoKitCompContainer: document.getElementById("codigoKitCompContainer"),
+                codigoKitComp: document.getElementById("codigoKitComp"),
+                codigo: document.getElementById("codigo"),
+                marca: document.getElementById("marca"),
+                modelo: document.getElementById("modelo"),
+                listaComponentes: document.getElementById("listaComponentes"),
+                resumenKit: document.getElementById("resumenKit"),
+                kitFinal: document.getElementById("kitFinal"),
+                componentesFinales: document.getElementById("componentesFinales"),
+                videoContainer: document.getElementById('video-container'),
+                video: document.getElementById('video'),
+                retryBtn: document.getElementById('retry-btn'),
+                scanableInputs: document.querySelectorAll(".scanable"),
+            };
+
+            /* ---------------------------
+             * LÓGICA DE FORMULARIO
+             * --------------------------- */
+
+            function mostrarFormulario() {
+                const tipo = dom.tipoComponente.value;
+                dom.formularioComponente.style.display = tipo ? "block" : "none";
+
+                if (tipo) {
+                    const codigoKitUsuario = dom.codigoKitUsuario.value;
+                    const isMultifuncional = tipo === "multifuncional";
+
+                    dom.codigoKitCompContainer.style.display = isMultifuncional ? "none" : "block";
+
+                    if (!isMultifuncional) {
+                        const count = state.contador[tipo] || 1;
+                        const autogen = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(count).padStart(4, '0')}`;
+                        dom.codigoKitComp.value = autogen;
+                    }
+
+                    // Limpiar campos
+                    dom.codigo.value = "";
+                    dom.marca.value = "";
+                    dom.modelo.value = "";
+
+                    // Detener cualquier escaneo si se cambia de componente
+                    stopScanning();
+                }
+            }
+
+            function agregarComponente() {
+                const tipo = dom.tipoComponente.value;
+                const codigo = dom.codigo.value.toUpperCase().trim();
+                const marca = dom.marca.value.toUpperCase().trim();
+                const modelo = dom.modelo.value.toUpperCase().trim();
+                const codigoKitUsuario = dom.codigoKitUsuario.value;
+
+                if (!tipo || !codigo || !marca || !modelo) {
+                    alert("Por favor, complete todos los campos (Código, Marca y Modelo).");
+                    return;
+                }
+
+                let codigoKitComp = "SIN-KIT";
+                if (tipo !== "multifuncional") {
+                    // Pre-incrementar el contador
+                    const count = state.contador[tipo] = (state.contador[tipo] || 0) + 1;
+                    codigoKitComp = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(count).padStart(4, '0')}`;
+                }
+
+                // Guardar en array
+                state.componentes.push({
+                    tipo,
+                    codigo,
+                    marca,
+                    modelo,
+                    codigoKitComp
+                });
+
+                // Mostrar en lista
+                const li = document.createElement("li");
+                li.textContent = `[${tipo.toUpperCase()}] ${codigoKitComp} - Marca: ${marca}, Modelo: ${modelo}, Código: ${codigo}`;
+                dom.listaComponentes.appendChild(li);
+
+                // Reset y ocultar formulario de componente
+                dom.tipoComponente.value = "";
+                mostrarFormulario(); // Oculta el formulario y limpia campos
+            }
+
+            function enviarFormulario() {
+                if (state.componentes.length === 0) {
+                    alert("Debe agregar al menos un componente al KIT.");
+                    return;
+                }
+
+                // Rellenar resumen
+                dom.kitFinal.textContent = dom.codigoKitUsuario.value;
+                dom.componentesFinales.innerHTML = "";
+
+                state.componentes.forEach(comp => {
+                    const li = document.createElement("li");
+                    li.textContent = `[${comp.tipo.toUpperCase()}] ${comp.codigoKitComp} - Marca: ${comp.marca}, Modelo: ${comp.modelo}, Código: ${comp.codigo}`;
+                    dom.componentesFinales.appendChild(li);
+                });
+
+                // Mostrar resumen
+                dom.resumenKit.style.display = "block";
+            }
+
+
+            /* ---------------------------
+             * LÓGICA DE ESCÁNER (CÁMARA)
+             * --------------------------- */
+
+            async function startCamera() {
+                try {
+                    const videoConstraints = {
+                        facingMode: "environment"
+                    };
+                    state.stream = await navigator.mediaDevices.getUserMedia({
+                        video: videoConstraints
+                    });
+                    dom.video.srcObject = state.stream;
+                    dom.videoContainer.style.display = 'block';
+                } catch (err) {
+                    alert("Error al acceder a la cámara. Asegúrese de tener permisos: " + err.message);
+                    stopScanning();
+                }
+            }
+
+            function stopCamera() {
+                if (state.stream) {
+                    state.stream.getTracks().forEach(track => track.stop());
+                    state.stream = null;
+                }
+                dom.videoContainer.style.display = 'none';
+            }
+
+            async function startScanning() {
+                state.scanning = true;
+                dom.retryBtn.style.display = "none";
+                await startCamera();
+
+                // Detección de códigos de barras (depende de la implementación del navegador)
+                if ('BarcodeDetector' in window) {
+                    try {
+                        const detector = new BarcodeDetector({
+                            formats: ["code_128", "ean_13", "ean_8", "code_39", "upc_a", "upc_e"]
+                        });
+                        detect(detector);
+                    } catch (e) {
+                        console.error("BarcodeDetector no soportado con esos formatos o inicialización fallida:", e);
+                        // Fallback: mostrar un mensaje si la detección no es posible
+                        alert("El escaneo con cámara no es completamente soportado en este dispositivo/navegador. Intente ingresar el código manualmente.");
+                        stopScanning();
+                    }
+                } else {
+                    alert("El escaneo con cámara no es soportado por este navegador. Por favor, ingrese el código manualmente.");
+                    stopScanning();
+                }
+            }
+
+            function stopScanning() {
+                state.scanning = false;
+                stopCamera();
+                // Solo mostramos el botón de reintentar si había un input activo
+                if (state.activeInput) {
+                    dom.retryBtn.style.display = "block";
+                }
+            }
+
+            async function detect(detector) {
+                if (!state.scanning || !state.stream) return;
+
+                try {
+                    const barcodes = await detector.detect(dom.video);
+                    if (barcodes.length > 0 && state.activeInput) {
+                        state.activeInput.value = barcodes[0].rawValue.toUpperCase();
+                        stopScanning();
+                        return;
+                    }
+                } catch (e) {
+                    // console.log("Error de detección o no se encontró código:", e);
+                }
+
+                // Continuar escaneando en el siguiente frame
+                requestAnimationFrame(() => detect(detector));
+            }
+
+            /* ---------------------------
+             * INICIALIZACIÓN
+             * --------------------------- */
+
+            function initApp() {
+                // Configurar eventos para inputs escaneables
+                dom.scanableInputs.forEach(input => {
+                    // Forzar mayúsculas en todos los inputs de escaneo/código
+                    input.addEventListener('input', () => {
+                        input.value = input.value.toUpperCase();
+                    });
+                });
+
+                // Configurar el evento del botón de escaneo para cada input
+                document.querySelectorAll(".scan-btn").forEach(btn => {
+                    const inputId = btn.getAttribute('data-input-id');
+                    const input = document.getElementById(inputId);
+
+                    btn.addEventListener("click", async (e) => {
+                        e.preventDefault(); // Evita el submit del formulario
+                        state.activeInput = input; // Define qué input se llenará
+
+                        if (state.scanning) {
+                            stopScanning();
+                        } else {
+                            await startScanning();
+                        }
+                    });
+                });
+
+                // Configurar evento del botón de reintento
+                dom.retryBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (state.activeInput) {
+                        startScanning();
+                    }
+                });
+            }
+
+            // Devolver las funciones públicas
+            return {
+                initApp: initApp,
+                mostrarFormulario: mostrarFormulario,
+                agregarComponente: agregarComponente,
+                enviarFormulario: enviarFormulario
+            };
         })();
+
+        // Iniciar la aplicación cuando el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', window.app.initApp);
     </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-
-    <footer>
-        <div style="display: flex;justify-content: center">
-            <div style="justify-content: center; display: flex">
-                <div style="justify-content: left">
-
-                    <div>
-                        <div>
-                            <ul class="mapa">
-
-                                <!-- USO DE ENLACES INTERNOS -->
-                                <h1>INDICE</h1>
-                                <li><a href="index.html" class="normal">Inicio</a></li>
-                                <li><a href="nosotros.html" class="normal">Nosotros</a></li>
-                                <li><a href="servicios.html" class="normal">Servicios</a></li>
-                                <li><a href="contacto.html" class="normal">Contacto</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div style="justify-content: center; display: flex">
-                        <div style="justify-content: left">
-                            <div>
-                                <div>
-                                    <ul class="mapa">
-
-                                        <!-- URLS AMIGABLES -->
-                                        <h1>REDES SOCIALES</h1>
-                                        <li><a href="www.facebook.com" class="normal">Facebook</a></li>
-                                        <li><a href="https://x.com/" class="normal">Twitter / X</a></li>
-                                        <li><a href="https://www.instagram.com/" class="normal">Instagram</a></li>
-                                        <li><a href="https://web.telegram.org/a/" class="normal">Telegram</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div style="justify-content: center; display: flex">
-                <div style="justify-content: left">
-                    <div>
-                        <div>
-                            <ul class="mapa">
-                                <h1>NOSOTROS</h1>
-                                <li><a href="nosotros.html#vicio" class="normal">Vision</a></li>
-                                <li><a href="nosotros.html#micion" class="normal">Mision</a></li>
-                                <li><a href="nosotros.html" class="normal">Quienes somos</a></li>
-                                <li><a href="nosotros.html#valorant" class="normal">Valores</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div>
-                            <ul class="mapa">
-                                <h1>CONTACTO</h1>
-                                <li><a href="tel:+51916419409" class="normal">916-419-409</a></li>
-                                <li><a href="mailto:Atlas@soporte.pe" class="normal">Atlas@soporte.pe</a></li>
-                                <li><a href="contacto.html#formulita" class="normal">Formulario</a></li>
-                                <li><a href="contacto.html#mapita" class="normal">Direccion</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <div>
-                    <ul class="mapa">
-                        <h1>SERVICIOS</h1>
-                        <li><a href="servicios.html#limpio" class="normal">Limpieza y mantenimiento</a></li>
-                        <li><a href="servicios.html#repair" class="normal">Reparacion hardware</a></li>
-                        <li><a href="servicios.html#instalar" class="normal">Instalacion software</a></li>
-                        <li><a href="servicios.html#recudato" class="normal">Recuperacion de datos</a></li>
-                        <li><a href="servicios.html#confRedes" class="normal">Configuracion de redes</a></li>
-                        <li><a href="servicios.html#seguro" class="normal">Servicios de seguridad</a></li>
-                        <li><a href="servicios.html#consults" class="normal">Consultoria y asesoramiento</a></li>
-                    </ul>
-                </div>
-            </div>
-
-
-            <div>
-                <div>
-                    <ul class="mapa">
-                        <h1>MODALIDAD</h1>
-                        <li><a href="sopTecnicoViaRemota.html" class="normal">Remota</a></li>
-                        <li><a href="sopTecnicoADomicilio.html" class="normal">A domicilio</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div>
-                <div>
-                    <ul class="mapa">
-                        <h1>PROMOCIONES</h1>
-                        <li><a href="diasFestivos.html" class="normal">Promociones</a></li>
-                    </ul>
-                </div>
-            </div>
-
-        </div>
-
-
-        <ul class="social-links">
-            <li><a href="https://www.facebook.com/"><img src="image/logoFacebook.png" alt="Facebook"></a></li>
-            <li><a href="https://www.twitter.com/"><img src="image/logoTwitter.png" alt="Twitter"></a></li>
-            <li><a href="https://www.instagram.com"><img src="image/logoInstagram.png" alt="Instagram"></a></li>
-        </ul>
-        <div class="contact-info">
-            <p>Contáctanos: <a href="tel:+51916419409">916-419-409</a></p>
-            <p>Correo electrónico: <a href="mailto:Atlas@soporte.pe">Atlas@soporte.pe</a></p>
-        </div>
-    </footer>
 </body>
+
 </html>
