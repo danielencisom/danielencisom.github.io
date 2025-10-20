@@ -1,483 +1,417 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="theme-color" content="#1976D2" />
     <title>Registro de Equipos de Cómputo</title>
-    <!-- Incluir una fuente moderna -->
+
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Librería de escaneo de códigos de barras compatible con iOS (QuaggaJS) -->
+
     <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+<script>
+// === Mejoras de validación y animación ===
+
+// Animar y centrar primer campo inválido
+function animateAndFocusInvalid(el) {
+    if (!el) return;
+    el.setAttribute('aria-invalid', 'true');
+    el.classList.add('input-invalid','input-shake');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => { el.classList.remove('input-shake'); }, 600);
+    try { el.focus({ preventScroll: true }); } catch(e){ el.focus(); }
+}
+
+// Limpiar invalid al corregir campo
+function clearInvalidOnInput(el) {
+    if (!el) return;
+    const handler = () => {
+        el.removeAttribute('aria-invalid');
+        el.classList.remove('input-invalid');
+        clearFieldError(el);
+        // Si el elemento es parte de un input-with-button, limpiar también el padre
+        if (el.parentElement && el.parentElement.classList.contains('input-with-button')) {
+             el.parentElement.classList.remove('input-invalid');
+        }
+        el.removeEventListener('input', handler);
+    };
+    el.addEventListener('input', handler, { once: true });
+}
+
+// Mostrar mensaje de error inline
+function showFieldError(el, msg) {
+    let sibling = el.parentElement.querySelector('.field-error');
+    if (!sibling) {
+        sibling = document.createElement('span');
+        sibling.className = 'field-error';
+        el.parentElement.appendChild(sibling);
+    }
+    sibling.textContent = msg;
+}
+function clearFieldError(el) {
+    const sibling = el.parentElement.querySelector('.field-error');
+    if (sibling) sibling.remove();
+}
+
+// === Overlay mejorado ===
+let lastActiveElementBeforeOverlay = null;
+function showOverlay(show = true, subText = '') {
+    const ov = dom.overlay;
+    if (show) {
+        lastActiveElementBeforeOverlay = document.activeElement;
+        ov.classList.add('show');
+        ov.setAttribute('aria-hidden', 'false');
+        ov.setAttribute('aria-busy', 'true');
+        dom.progressBar.style.width = '6%';
+        dom.loaderSub.textContent = subText || 'Procesando...';
+        document.querySelectorAll('button, input, select').forEach(el => {
+            if (!ov.contains(el)) {
+                el.dataset._wasDisabled = el.disabled ? '1' : '0';
+                el.disabled = true;
+            }
+        });
+        document.addEventListener('keydown', escOverlayHandler);
+    } else {
+        ov.classList.remove('show');
+        ov.setAttribute('aria-hidden', 'true');
+        ov.setAttribute('aria-busy', 'false');
+        dom.progressBar.style.width = '0%';
+        document.querySelectorAll('[data-_wasDisabled]').forEach(el => {
+            el.disabled = el.dataset._wasDisabled === '1';
+            delete el.dataset._wasDisabled;
+        });
+        document.removeEventListener('keydown', escOverlayHandler);
+        try { lastActiveElementBeforeOverlay && lastActiveElementBeforeOverlay.focus(); } catch(e){}
+    }
+}
+
+function escOverlayHandler(e) {
+    if (e.key === 'Escape') {
+        showMessage('Operación en curso — no puede cancelarse ahora.', 'info');
+    }
+}
+
+// Feedback visual al detectar correctamente
+function flashFrame() {
+    const frame = document.querySelector('.scan-frame');
+    if (!frame) return; // Si no hay marco, salir
+    frame.style.borderColor = 'lime';
+    frame.style.boxShadow = '0 0 25px lime';
+    setTimeout(() => {
+        frame.style.borderColor = 'rgba(0,255,0,0.8)';
+        frame.style.boxShadow = '0 0 20px rgba(0,255,0,0.4)';
+    }, 600);
+}
+</script>
 
     <style>
-        :root {
-            --primary-color: #1976D2;
-            /* Azul fuerte */
-            --secondary-color: #4CAF50;
-            /* Verde para éxito/envío */
-            --danger-color: #D32F2F;
-            /* Rojo para peligro/eliminar */
-            --background-light: #f4f6f9;
-            --surface-light: #ffffff;
-            --text-dark: #333;
-            --border-color: #ddd;
-            --invalid-color: #f44336;
+        :root{
+            --primary-color:#1976D2;
+            --secondary-color:#4CAF50;
+            --danger-color:#D32F2F;
+            --background-light:#f4f6f9;
+            --surface-light:#ffffff;
+            --text-dark:#333;
+            --border-color:#ddd;
+            --invalid-color:#f44336;
+            --overlay-bg: rgba(0,0,0,0.45);
         }
+        html,body{height:100%;margin:0;padding:0;background:var(--background-light);font-family:'Roboto',Arial,sans-serif;color:var(--text-dark);-webkit-overflow-scrolling:touch;}
+        .outer{display:flex;justify-content:center;padding:18px;}
+        .container{width:100%;max-width:980px;margin:0 auto;max-height:calc(100vh - 36px);overflow-y:auto;padding-bottom:24px;}
+        h1{color:var(--primary-color);text-align:center;margin-bottom:18px;font-weight:700;}
+        h2,h3{color:var(--primary-color);margin-top:18px;border-bottom:2px solid var(--primary-color);padding-bottom:6px;font-weight:500;}
+        .card{background:var(--surface-light);padding:16px;border-radius:8px;margin-bottom:18px;box-shadow:0 4px 10px rgba(0,0,0,0.06);}
+        .form-group{margin-bottom:12px;}
+        label{display:block;margin-bottom:6px;font-weight:500;font-size:0.95em;}
+        input[type="text"], select{padding:10px 12px;border:1px solid var(--border-color);border-radius:4px;width:100%;box-sizing:border-box;font-size:1em;transition:border-color .25s,box-shadow .25s;}
+        input[type="text"]:focus, select:focus{border-color:var(--primary-color);outline:none;box-shadow:0 0 0 3px rgba(25,118,210,0.08);}
+        .input-invalid{border-color:var(--invalid-color) !important;box-shadow:0 0 0 3px rgba(244,67,54,0.12) !important;}
+        input[readonly]{background:#eee;color:#555;cursor:default;}
+        .input-with-button{display:flex;align-items:center;border:1px solid var(--border-color);border-radius:4px;overflow:hidden;}
+        .input-with-button input{border:none;flex-grow:1;padding:10px 12px;font-size:1em;}
+        .scan-btn{background-color:var(--primary-color);color:white;border:none;padding:10px 15px;cursor:pointer;font-size:1.1em;line-height:1;}
+        .scan-btn:hover{background-color:#1565C0;}
+        .camera-switch{background:transparent;border:none;color:white;padding:6px;border-radius:6px;cursor:pointer;margin-left:8px;}
+        .btn-action{border:none;padding:12px 20px;margin-top:12px;border-radius:6px;cursor:pointer;font-size:1em;font-weight:500;width:100%;transition:background-color .2s;background-color:var(--secondary-color);color:var(--surface-light);}
+        .btn-action:hover{background-color:#388E3C;}
+        .btn-danger{background-color:var(--danger-color);color:var(--surface-light);width:100%;padding:10px;margin-top:10px;border:none;border-radius:4px;cursor:pointer;}
+        .btn-danger:hover{background-color:#C62828;}
+        #listaComponentes{list-style:none;padding:0;margin:0;}
+        #listaComponentes li{background:#e3f2fd;margin-bottom:8px;padding:10px;border-left:5px solid var(--primary-color);border-radius:4px;font-size:0.95em;}
+        #resumenKit{background:#e0f2f1;border-left:5px solid var(--secondary-color);}
+        #video-container{margin-top:12px;position:relative;width:100%;min-height:220px;overflow:hidden;background:#000;border-radius:4px;}
+        #video-container video,#video-container canvas{max-width:100%;width:100%;display:block;}
+        .dynamic-fields{display:grid;grid-template-columns:1fr;gap:12px;margin-top:4px;}
+        .responsable-group{display:flex;gap:10px;}
+        .responsable-group select{width:30%;flex-shrink:0;}
+        .full-width-field{grid-column:1 / -1;}
+        #message-box{display:none;padding:10px;border-radius:6px;margin-bottom:12px;font-weight:500;}
+        .msg-error{background:#ffeeee;color:var(--danger-color);border-left:5px solid var(--danger-color);}
+        .msg-success{background:#e8f5e9;color:var(--secondary-color);border-left:5px solid var(--secondary-color);}
+        .msg-info{background:#e3f2fd;color:var(--primary-color);border-left:5px solid var(--primary-color);}
+        @media (min-width:768px){.dynamic-fields{grid-template-columns:1fr 1fr}.dynamic-fields.stacked>.form-group{grid-column:1 / -1;}}
+        @media (max-width:420px){.scan-btn{padding:12px 14px;font-size:1.15em}.btn-action{padding:14px;font-size:1.05em}}
 
-        body {
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: var(--background-light);
-            color: var(--text-dark);
-        }
+        /* Overlay loader */
+        .overlay{position:fixed;left:0;right:0;top:0;bottom:0;background:var(--overlay-bg);display:flex;align-items:center;justify-content:center;z-index:9999;display:none;}
+        .loader-card{width:90%;max-width:420px;background:#fff;padding:18px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.25);text-align:center;}
+        .loader-title{font-weight:600;color:var(--primary-color);margin-bottom:12px;}
+        .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin:12px 0;}
+        .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary-color),#63a4ff);transition:width 0.45s ease;}
+        .loader-sub{text-transform:uppercase;font-size:0.85em;color:#666;margin-top:6px;}
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        /* small control over video overlay */
+        .video-controls{position:absolute;right:10px;top:10px;z-index:20;display:flex;gap:8px;align-items:center;}
+        .small-btn{background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:8px;border-radius:8px;cursor:pointer;}
+        .small-btn:hover{background:rgba(0,0,0,0.6);}
+    
+/* === Mejoras de animación y validación (color rojo) === */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+.input-shake { animation: shake 520ms ease-in-out; }
 
-        h1 {
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 700;
-        }
+.input-invalid {
+  border-color: var(--invalid-color) !important;
+  box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
+}
+/* Estilo para el padre .input-with-button cuando es inválido */
+.input-with-button.input-invalid {
+  border-color: var(--invalid-color) !important;
+  box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
+}
 
-        h2,
-        h3 {
-            color: var(--primary-color);
-            margin-top: 20px;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 5px;
-            font-weight: 500;
-        }
+.overlay.show { display:flex; animation: overlayFade .28s ease forwards; }
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-        .card {
-            background: var(--surface-light);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+.progress-bar { transition: width 420ms cubic-bezier(0.2,0.9,0.2,1); }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+.field-error {
+  color: var(--invalid-color);
+  font-size: 0.85em;
+  margin-top: 6px;
+  display: block;
+  font-weight: 500; /* Asegurar que el mensaje de error resalte */
+}
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            font-size: 0.95em;
-        }
-
-        input[type="text"],
-        select {
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"]:focus,
-        select:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
-        }
-
-        /* Estilo para campos inválidos */
-        .input-invalid {
-            border-color: var(--invalid-color) !important;
-            box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.4) !important;
-        }
-
-
-        input[readonly] {
-            background-color: #eee;
-            color: #555;
-            cursor: default;
-        }
-
-        /* Contenedor del escáner */
-        .input-with-button {
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            overflow: hidden;
-            transition: border-color 0.3s;
-        }
-
-        .input-with-button.input-invalid {
-            border-color: var(--invalid-color) !important;
-        }
-
-        .input-with-button input {
-            border: none;
-            flex-grow: 1;
-        }
-
-        .scan-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 1.2em;
-            transition: background-color 0.3s;
-            line-height: 1;
-        }
-
-        .scan-btn:hover {
-            background-color: #1565C0;
-        }
-
-        .btn-action {
-            border: none;
-            padding: 12px 20px;
-            margin-top: 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 500;
-            width: 100%;
-            transition: background-color 0.3s;
-            background-color: var(--secondary-color);
-            color: var(--surface-light);
-        }
-
-        .btn-action:hover {
-            background-color: #388E3C;
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: var(--surface-light);
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .btn-danger:hover {
-            background-color: #C62828;
-        }
-
-        /* Lista de componentes añadidos */
-        #listaComponentes {
-            list-style: none;
-            padding: 0;
-        }
-
-        #listaComponentes li {
-            background: #e3f2fd;
-            margin-bottom: 8px;
-            padding: 10px;
-            border-left: 5px solid var(--primary-color);
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        /* Resumen Final */
-        #resumenKit {
-            background: #e0f2f1;
-            border-left: 5px solid var(--secondary-color);
-        }
-
-        #resumenKit p, #resumenKit h4 {
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-        
-        #componentesResumenLista li {
-            padding: 5px 0;
-        }
-
-        /* Estilos de la cámara y escaneo (QuaggaJS) */
-        #video-container {
-            margin-top: 15px;
-            position: relative;
-            width: 100%;
-            min-height: 250px;
-            overflow: hidden;
-            background-color: #000;
-            border-radius: 4px;
-        }
-
-        #video-container video,
-        #video-container canvas {
-            max-width: 100%;
-            width: 100%;
-            display: block;
-        }
-
-        /* Estilos para campos dinámicos */
-        .dynamic-fields {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 5px;
-        }
-
-        /* FIX: Asegura que la etiqueta del responsable no se aplaste ni se rompa */
-        #responsable-block label {
-            white-space: nowrap;
-        }
-
-        @media (min-width: 768px) {
-            .dynamic-fields {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            /* Cuando los dos campos de persona están presentes, forzamos la apilación completa (full-width) */
-            .dynamic-fields.stacked>.form-group {
-                grid-column: 1 / -1;
-            }
-        }
-
-        .responsable-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .responsable-group select {
-            width: 30%;
-            flex-shrink: 0;
-        }
-
-        .full-width-field {
-            grid-column: 1 / -1;
-        }
-
-        /* Estilos para mensajes de estado */
-        #message-box {
-            display: none;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-
-        .msg-error {
-            background-color: #ffeeee;
-            color: var(--danger-color);
-            border-left: 5px solid var(--danger-color);
-        }
-
-        .msg-success {
-            background-color: #e8f5e9;
-            color: var(--secondary-color);
-            border-left: 5px solid var(--secondary-color);
-        }
-
-        .msg-info {
-            background-color: #e3f2fd;
-            color: var(--primary-color);
-            border-left: 5px solid var(--primary-color);
-        }
-    </style>
+/* === Marco guía de escaneo de códigos === */
+.scan-frame {
+  position: absolute;
+  top: 30%;
+  left: 10%;
+  width: 80%;
+  height: 40%;
+  border: 3px solid rgba(0, 255, 0, 0.8);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+  z-index: 10;
+  pointer-events: none;
+  border-radius: 8px;
+  transition: all 0.4s ease;
+}
+</style>
 </head>
-
 <body>
+    <div class="outer">
+        <div class="container" role="main">
+            <h1>REGISTRO DE EQUIPOS DE CÓMPUTO</h1>
 
-    <div class="container">
-        <h1>REGISTRO DE EQUIPOS DE CÓMPUTO</h1>
+            <div id="message-box" class="card" aria-live="polite"></div>
 
-        <!-- Mensaje para errores (sustituto de alert) -->
-        <div id="message-box" class="card"></div>
-
-        <!-- SECCIÓN DE INFORMACIÓN GENERAL DEL KIT -->
-        <div class="card">
-            <h2>Información General del KIT y Ubicación</h2>
-
-            <!-- Código del KIT -->
-            <div class="form-group">
-                <label for="codigoKitUsuario">Código del KIT:</label>
-                <input type="text" id="codigoKitUsuario" value="KIT-0001" readonly>
-            </div>
-
-            <!-- Técnico Responsable de Mantenimiento -->
-            <div class="form-group">
-                <label for="tecnicoResponsable">Técnico Responsable:</label>
-                <select id="tecnicoResponsable" required>
-                    <option value="">Seleccione...</option>
-                    <option value="CH">CARLOS HUACHO</option>
-                    <option value="RE">RUBEN ERNESTO MEZA</option>
-                    <option value="JI">JOSUE IBAÑEZ CAMPOS</option>
-                    <option value="DE">DANIEL ENRIQUEZ</option>
-                    <option value="OE">ODAR ENRIQUE</option>
-                    <option value="SC">SANTIAGO CARPIO</option>
-                    <option value="DC">DAVID COTERA</option>
-                </select>
-            </div>
-
-            <!-- SEDE -->
-            <div class="form-group">
-                <label for="sede">Sede:</label>
-                <select id="sede" required>
-                    <option value="">Seleccione...</option>
-                    <option value="SS12">SEDE SAENZ PEÑA 120</option>
-                    <option value="SS17">SEDE SAENZ PEÑA 175-177-181</option>
-                    <option value="SS15">SEDE SAENZ PEÑA 155-157</option>
-                </select>
-            </div>
-
-            <!-- DEPENDENCIA -->
-            <div class="form-group">
-                <label for="dependencia">Dependencia:</label>
-                <select id="dependencia" required>
-                    <option value="">-- Seleccionar --</option>
-                    <option value="Lima">Lima</option>
-                    <option value="Arequipa">Arequipa</option>
-                    <option value="Cusco">Cusco</option>
-                </select>
-            </div>
-        </div>
-        <!-- FIN SECCIÓN DE INFORMACIÓN GENERAL -->
-
-
-        <!-- NUEVA SECCIÓN DE INFORMACIÓN DE USUARIO Y CARGO -->
-        <div class="card">
-            <h2>Información de Usuario Responsable de KIT</h2>
-
-            <!-- TIPO DE CARGO -->
-            <div class="form-group">
-                <label for="tipoCargo">TIPO DE CARGO:</label>
-                <select id="tipoCargo" onchange="window.app.mostrarCampos()" required>
-                    <option value="">Seleccione...</option>
-                    <option value="ASD">ASISTENTE ADMINISTRATIVO</option>
-                    <option value="AFF">ASISTENTE FUNCION FISCAL</option>
-                    <option value="AUD">AUXILIAR ADMINISTRATIVO</option>
-                    <option value="COOR">COORDINADOR</option>
-                    <option value="EA">ESPECIALISTA ADMINISTRATIVO</option>
-                    <option value="FAF">FISCAL ADJUNTO FISCAL</option>
-                    <option value="OAD">OPERADOR ADMINISTRATIVO</option>
-                    <option value="PRO">PROGRAMADOR</option>
-                    <option value="SEC">SECIGRISTA</option>
-                    <option value="TAD">TECNICO ADMINISTRATIVO</option>
-                    <option value="TER">TERCERO</option>
-                    <option value="VOL">VOLUNTARIO</option>
-                </select>
-            </div>
-
-            <!-- Campos dinámicos (RESPONSABLE, USUARIO FINAL CONDICIONAL) -->
-            <div id="camposDinamicos" class="dynamic-fields">
-                <!-- Se llenará con Responsable y Usuario Final (condicional) -->
-            </div>
-        </div>
-        <!-- FIN SECCIÓN USUARIO RESPONSABLE -->
-
-
-        <!-- SECCIÓN DE REGISTRO DE COMPONENTES -->
-        <div class="card">
-            <h2>Registro de Componentes</h2>
-
-            <div class="form-group">
-                <label for="tipoComponente">Seleccionar Componente:</label>
-                <select id="tipoComponente" onchange="window.app.mostrarFormulario()">
-                    <option value="">-- Seleccionar --</option>
-                    <option value="cpu">CPU</option>
-                    <option value="laptop">Laptop</option>
-                    <option value="monitor">Monitor</option>
-                    <option value="teclado">Teclado</option>
-                    <option value="docking">Docking</option>
-                    <option value="multifuncional">Multifuncional</option>
-                </select>
-            </div>
-
-            <!-- Formulario dinámico del componente -->
-            <div class="card" id="formularioComponente"
-                style="display:none; padding: 15px; background: #f9f9f9; box-shadow: none;">
-
-                <div class="form-group" id="codigoKitCompContainer">
-                    <label for="codigoKitComp">Código del KIT del Componente:</label>
-                    <input type="text" id="codigoKitComp" readonly>
-                </div>
-
-                <!-- Inputs con escáner -->
+            <div class="card">
+                <h2>Información General del KIT y Ubicación</h2>
                 <div class="form-group">
-                    <label>Código de barras / Nro de serie:</label>
-                    <div class="input-with-button">
-                        <input id="codigo" type="text" class="scanable" placeholder="Escanea o escribe el código"
-                            autocomplete="off" />
-                        <button class="scan-btn" data-input-id="codigo">📷</button>
+                    <label for="codigoKitUsuario">Código del KIT:</label>
+                    <input type="text" id="codigoKitUsuario" value="KIT-0001" readonly />
+                </div>
+                <div class="form-group">
+                    <label for="tecnicoResponsable">Técnico Responsable:</label>
+                    <select id="tecnicoResponsable" required>
+                        <option value="">Seleccione...</option>
+                        <option value="CH">CARLOS HUACHO</option>
+                        <option value="RE">RUBEN ERNESTO MEZA</option>
+                        <option value="JI">JOSUE IBAÑEZ CAMPOS</option>
+                        <option value="DE">DANIEL ENRIQUEZ</option>
+                        <option value="OE">ODAR ENRIQUE</option>
+                        <option value="SC">SANTIAGO CARPIO</option>
+                        <option value="DC">DAVID COTERA</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sede">Sede:</label>
+                    <select id="sede" required>
+                        <option value="">Seleccione...</option>
+                        <option value="SS12">SEDE SAENZ PEÑA 120</option>
+                        <option value="SS17">SEDE SAENZ PEÑA 175-177-181</option>
+                        <option value="SS15">SEDE SAENZ PEÑA 155-157</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dependencia">Dependencia:</label>
+                    <select id="dependencia" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="Lima">Lima</option>
+                        <option value="Arequipa">Arequipa</option>
+                        <option value="Cusco">Cusco</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Información de Usuario Responsable de KIT</h2>
+                <div class="form-group">
+                    <label for="tipoCargo">TIPO DE CARGO:</label>
+                    <select id="tipoCargo" onchange="window.app.mostrarCampos()" required>
+                        <option value="">Seleccione...</option>
+                        <option value="ASD">ASISTENTE ADMINISTRATIVO</option>
+                        <option value="AFF">ASISTENTE FUNCION FISCAL</option>
+                        <option value="AUD">AUXILIAR ADMINISTRATIVO</option>
+                        <option value="COOR">COORDINADOR</option>
+                        <option value="EA">ESPECIALISTA ADMINISTRATIVO</option>
+                        <option value="FAF">FISCAL ADJUNTO FISCAL</option>
+                        <option value="OAD">OPERADOR ADMINISTRATIVO</option>
+                        <option value="PRO">PROGRAMADOR</option>
+                        <option value="SEC">SECIGRISTA</option>
+                        <option value="TAD">TECNICO ADMINISTRATIVO</option>
+                        <option value="TER">TERCERO</option>
+                        <option value="VOL">VOLUNTARIO</option>
+                    </select>
+                </div>
+                <div id="camposDinamicos" class="dynamic-fields"></div>
+            </div>
+
+            <div class="card">
+                <h2>Registro de Componentes</h2>
+                <div class="form-group">
+                    <label for="tipoComponente">Seleccionar Componente:</label>
+                    <select id="tipoComponente" onchange="window.app.mostrarFormulario()">
+                        <option value="">-- Seleccionar --</option>
+                        <option value="anexo">Anexo</option>
+                        <option value="cpu">CPU</option>
+                        <option value="laptop">Laptop</option>
+                        <option value="monitor">Monitor</option>
+                        <option value="teclado">Teclado</option>
+                        <option value="docking">Docking</option>
+                        <optgroup label="Periféricos">
+                            <option value="fotocopiadora">Fotocopiadora</option>
+                            <option value="impresora">Impresora Multifuncional</option>
+                            <option value="escaner">Escáner</option>
+                        </optgroup>
+                    </select>
                     </div>
-                </div>
 
-                <!-- Contenedor de la Cámara y Escaneo (QuaggaJS) -->
-                <div id="video-container" style="display: none;">
-                    <!-- QuaggaJS renderizará el video y el canvas aquí -->
-                </div>
-                <button id="retry-btn" class="btn-danger" style="display:none;">Volver a intentar escaneo</button>
+                <div class="card" id="formularioComponente" style="display:none;padding:12px;background:#f9f9f9;box-shadow:none;">
+                    <div class="form-group" id="codigoKitCompContainer">
+                        <label for="codigoKitComp">Código del KIT del Componente:</label>
+                        <input type="text" id="codigoKitComp" readonly />
+                    </div>
+                    
+                    <div class="form-group" id="anexo-group" style="display:none;">
+                        <label for="anexo">📌 N° de Anexo (Solo 5 números):</label>
+                        <input type="text" id="anexo" placeholder="Escriba el N° de Anexo (e.g., 12345)" pattern="\d{5}" maxlength="5" />
+                    </div>
 
-                <div class="form-group">
-                    <label for="marca">Marca:</label>
-                    <input type="text" id="marca" placeholder="Marca del componente">
-                </div>
+                    <div class="form-group" id="ip-group" style="display:none;">
+                        <label for="ip">📌 Dirección IP:</label>
+                        <input type="text" id="ip" placeholder="Dirección IP (e.g., 192.168.1.100)" />
+                    </div>
 
-                <div class="form-group">
-                    <label for="modelo">Modelo:</label>
-                    <input type="text" id="modelo" placeholder="Modelo del componente">
-                </div>
+                    <div class="form-group" id="marguesi-group" style="display:none;">
+                        <label>📌 MARGUESI (Código de barras):</label>
+                        <div class="input-with-button">
+                            <input id="marguesi" type="text" class="scanable" placeholder="Escanea o escribe el código de barras" autocomplete="off" />
+                            <button class="scan-btn" data-input-id="marguesi" type="button">📷</button>
+                        </div>
+                    </div>
 
-                <button class="btn-action" onclick="window.app.agregarComponente()">Agregar Componente</button>
+                    <div id="video-container" style="display:none;">
+                        <div class="video-controls" aria-hidden="false">
+                            <button id="switch-camera" class="small-btn" title="Cambiar cámara">↺</button>
+                            <button id="toggle-torch" class="small-btn" title="Linterna">🔦</button>
+                        </div>
+                        <div class="scan-frame"></div>
+                    </div>
+                    <button id="retry-btn" class="btn-danger" style="display:none;" type="button">Volver a intentar escaneo</button>
+                    
+                    <div class="form-group" id="patrimonial-group" style="display:none;">
+                        <label for="patrimonial">Cod. Patrimonial (Opcional):</label>
+                        <input type="text" id="patrimonial" placeholder="Código Patrimonial" />
+                    </div>
+
+                    <div class="form-group" id="marca-group" style="display:none;">
+                        <label for="marca">📌 Marca:</label>
+                        <input type="text" id="marca" placeholder="Marca del componente" />
+                    </div>
+
+                    <div class="form-group" id="modelo-group" style="display:none;">
+                        <label for="modelo">📌 Modelo:</label>
+                        <input type="text" id="modelo" placeholder="Modelo del componente" />
+                    </div>
+                    
+                    <div class="form-group" id="nro_serie-group" style="display:none;">
+                        <label for="nro_serie">📌 N° serie:</label>
+                        <input type="text" id="nro_serie" placeholder="Escribe el Número de Serie" />
+                    </div>
+
+
+                    <button class="btn-action" onclick="window.app.agregarComponente()" type="button">Agregar Componente</button>
+                </div>
             </div>
 
+            <div class="card">
+                <h3>Componentes añadidos al KIT</h3>
+                <ul id="listaComponentes"></ul>
+            </div>
+
+            <div class="card" id="resumenKit" style="display:none;">
+                <h3>Resumen del KIT</h3>
+                <p><strong>KIT y Titular:</strong> <span id="kitFinal"></span></p>
+                <h4>Componentes Registrados:</h4>
+                <ul id="componentesResumenLista" style="list-style-type:none;padding-left:0;"></ul>
+            </div>
+
+            <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom:26px;" type="button">Enviar KIT a Registro</button>
         </div>
-        <!-- FIN SECCIÓN DE REGISTRO DE COMPONENTES -->
+    </div>
 
-
-        <!-- LISTA DE COMPONENTES AÑADIDOS -->
-        <div class="card">
-            <h3>Componentes añadidos al KIT</h3>
-            <ul id="listaComponentes"></ul>
+    <div id="overlay" class="overlay" aria-hidden="true">
+        <div class="loader-card" role="status" aria-live="polite">
+            <div class="loader-title">Enviando datos...</div>
+            <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+            <div id="loader-sub" class="loader-sub">Conectando con servidor...</div>
         </div>
-
-        <!-- Resumen instantáneo (movido arriba) -->
-        <div class="card" id="resumenKit" style="display:none;">
-            <h3>Resumen del KIT</h3>
-            <p><strong>KIT y Titular:</strong> <span id="kitFinal"></span></p>
-            <h4>Componentes Registrados:</h4>
-            <!-- LISTA DE COMPONENTES EN RESUMEN -->
-            <ul id="componentesResumenLista" style="list-style-type: none; padding-left: 0;"></ul>
-        </div>
-
-
-        <!-- Botón para enviar todo -->
-        <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom: 25px;">Enviar KIT a
-            Registro</button>
-
     </div>
 
     <script>
-        // Objeto global para encapsular toda la lógica de la aplicación
-        window.app = (function () {
-            // CONSTANTE: URL de tu Google Apps Script (¡ACTUALIZADA A LA URL PROPORCIONADA!)
-            const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec"; 
+        /*******************************************************************
+         * App: Registro de Equipos - Versión con autosave + loader + mejora lector
+         * Comentarios en español, mantener interacciones y estilos originales
+         *******************************************************************/
 
-            // Estado de la aplicación
+        window.app = (function () {
+            // URL de Google Apps Script (mantén la tuya)
+            const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec";
+
+            // Estado interno
             const state = {
-                contador: {
-                    cpu: 1,
-                    monitor: 1,
-                    teclado: 1,
-                    laptop: 1,
-                    docking: 1
-                },
+                contador: { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1 },
                 componentes: [],
                 scanning: false,
                 activeInput: null,
+                currentFacingMode: 'environment', // 'environment' | 'user'
+                torchAvailable: false,
+                lastScanTimestamp: 0
             };
 
-            // Referencias a elementos del DOM
+            // DOM refs (algunos asignados en init)
             const dom = {
                 messageBox: document.getElementById('message-box'),
                 tipoCargo: document.getElementById('tipoCargo'),
@@ -487,109 +421,378 @@
                 codigoKitUsuario: document.getElementById("codigoKitUsuario"),
                 codigoKitCompContainer: document.getElementById("codigoKitCompContainer"),
                 codigoKitComp: document.getElementById("codigoKitComp"),
-                codigo: document.getElementById("codigo"),
-                marca: document.getElementById("marca"),
-                modelo: document.getElementById("modelo"),
+                // Referencias de campos actualizadas
+                marguesi: document.getElementById("marguesi"), // MARGUESI (antes 'codigo')
+                nro_serie: document.getElementById("nro_serie"), // NUEVO N° Serie
+                marca: document.getElementById("marca"), 
+                modelo: document.getElementById("modelo"), 
+                // Fin referencias de campos actualizadas
                 listaComponentes: document.getElementById("listaComponentes"),
                 resumenKit: document.getElementById("resumenKit"),
                 kitFinal: document.getElementById("kitFinal"),
                 videoContainer: document.getElementById('video-container'),
                 retryBtn: document.getElementById('retry-btn'),
-                scanableInputs: document.querySelectorAll(".scanable"),
+                scanableInputs: null, // Se reasigna en init
                 tecnicoResponsable: null,
                 sede: null,
-                dependencia: null
+                dependencia: null,
+                overlay: document.getElementById('overlay'),
+                progressBar: document.getElementById('progress-bar'),
+                loaderSub: document.getElementById('loader-sub'),
+                switchCameraBtn: document.getElementById('switch-camera'),
+                toggleTorchBtn: document.getElementById('toggle-torch')
             };
 
+            /**********************
+             * UTIL - sonido corto
+             **********************/
+            function beep(duration = 0.05, frequency = 880, volume = 0.05) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'sine';
+                    o.frequency.value = frequency;
+                    g.gain.value = volume;
+                    o.connect(g);
+                    g.connect(ctx.destination);
+                    o.start(0);
+                    setTimeout(() => { o.stop(); ctx.close(); }, duration * 1000);
+                } catch (e) { /* silent */ }
+            }
+
+            /**********************
+             * Mensajes UI
+             **********************/
             function showMessage(message, type = 'error') {
                 dom.messageBox.textContent = message;
-                dom.messageBox.className = 'card'; // Reset classes
+                dom.messageBox.className = 'card';
                 dom.messageBox.classList.add(`msg-${type}`);
                 dom.messageBox.style.display = 'block';
-                // Ocultar automáticamente si no es un mensaje de carga
-                if (type !== 'info') {
+                if (type !== 'info') setTimeout(() => { dom.messageBox.style.display = 'none'; }, 4500);
+            }
+
+            /**********************
+             * AUTOSAVE (localStorage)
+             **********************/
+            const LS_KEY = 'registro_equipos_autosave_v1';
+            const LS_PENDING_SUBMISSIONS = 'registro_equipos_pending_submissions_v1';
+
+            // Guardar estado actual (no incluye contadores de sesión)
+            function autosave() {
+                try {
+                    // Obtener referencias de campos dinámicos para el guardado
+                    const nombreResponsableInput = document.getElementById('nombreResponsable');
+                    const tipoResponsableInput = document.getElementById('tipoResponsable');
+                    const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
+                    const ipInput = document.getElementById('ip');
+                    const anexoInput = document.getElementById('anexo');
+                    const patrimonialInput = document.getElementById('patrimonial');
+                    const marcaInput = document.getElementById('marca');
+                    const modeloInput = document.getElementById('modelo');
+                    // Referencias Actualizadas
+                    const marguesiInput = document.getElementById('marguesi');
+                    const nroSerieInput = document.getElementById('nro_serie');
+                    // Fin Referencias Actualizadas
+
+                    const codigoKitCompInput = document.getElementById('codigoKitComp');
+                    const tipoComponenteInput = document.getElementById('tipoComponente');
+
+                    const payload = {
+                        form: {
+                            codigoKitUsuario: dom.codigoKitUsuario.value,
+                            tecnicoResponsable: dom.tecnicoResponsable ? dom.tecnicoResponsable.value : '',
+                            sede: dom.sede ? dom.sede.value : '',
+                            dependencia: dom.dependencia ? dom.dependencia.value : '',
+                            tipoCargo: dom.tipoCargo.value,
+                            // campos dinamicos de Responsable
+                            nombreResponsable: (nombreResponsableInput || {}).value || '',
+                            tipoResponsable: (tipoResponsableInput || {}).value || '',
+                            usuarioFinalName: (usuarioFinalNameInput || {}).value || '',
+                            // campos temporales de componente (para autocompletado si vuelve a seleccionar el mismo tipo)
+                            ip: (ipInput || {}).value || '',
+                            anexo: (anexoInput || {}).value || '',
+                            patrimonial: (patrimonialInput || {}).value || '',
+                            marca: (marcaInput || {}).value || '',
+                            modelo: (modeloInput || {}).value || '',
+                            // Actualizados
+                            marguesi: (marguesiInput || {}).value || '', 
+                            nro_serie: (nroSerieInput || {}).value || '',
+                            // Fin Actualizados
+                            codigoKitComp: (codigoKitCompInput || {}).value || '',
+                            tipoComponente: (tipoComponenteInput || {}).value || ''
+                        },
+                        componentes: state.componentes,
+                        contador: state.contador,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(LS_KEY, JSON.stringify(payload));
+                    // pequeña indicación visual (silenciosa)
+                } catch (e) {
+                    console.warn('Autosave failed', e);
+                }
+            }
+
+            // Restaurar si existe
+            function restoreAutosave() {
+                try {
+                    const raw = localStorage.getItem(LS_KEY);
+                    if (!raw) return;
+                    const payload = JSON.parse(raw);
+                    if (!payload) return;
+
+                    // Restaurar campos principales
+                    const f = payload.form || {};
+                    if (f.codigoKitUsuario) dom.codigoKitUsuario.value = f.codigoKitUsuario;
+                    if (f.tecnicoResponsable && dom.tecnicoResponsable) dom.tecnicoResponsable.value = f.tecnicoResponsable;
+                    if (f.sede && dom.sede) dom.sede.value = f.sede;
+                    if (f.dependencia && dom.dependencia) dom.dependencia.value = f.dependencia;
+                    if (f.tipoCargo) dom.tipoCargo.value = f.tipoCargo;
+
+                    // recrear campos dinamicos de Responsable si aplica
+                    if (f.tipoCargo) mostrarCampos();
+
                     setTimeout(() => {
-                        dom.messageBox.style.display = 'none';
-                    }, 4000);
-                }
-            }
+                        // Restaurar campos de Responsable
+                        if (f.nombreResponsable) document.getElementById('nombreResponsable') && (document.getElementById('nombreResponsable').value = f.nombreResponsable);
+                        if (f.tipoResponsable) document.getElementById('tipoResponsable') && (document.getElementById('tipoResponsable').value = f.tipoResponsable);
+                        if (f.usuarioFinalName) document.getElementById('usuarioFinalName') && (document.getElementById('usuarioFinalName').value = f.usuarioFinalName);
+                        
+                        // Restaurar campos de Componente (si se dejó un formulario a medias)
+                        if (f.tipoComponente) dom.tipoComponente.value = f.tipoComponente;
+                        mostrarFormulario(false); // No validar campos obligatorios al restaurar
+                        if (f.ip) document.getElementById('ip') && (document.getElementById('ip').value = f.ip);
+                        if (f.anexo) document.getElementById('anexo') && (document.getElementById('anexo').value = f.anexo);
+                        if (f.patrimonial) document.getElementById('patrimonial') && (document.getElementById('patrimonial').value = f.patrimonial);
+                        if (f.marca) document.getElementById('marca') && (document.getElementById('marca').value = f.marca);
+                        if (f.modelo) document.getElementById('modelo') && (document.getElementById('modelo').value = f.modelo);
+                        // Actualizados
+                        if (f.marguesi) document.getElementById('marguesi') && (document.getElementById('marguesi').value = f.marguesi);
+                        if (f.nro_serie) document.getElementById('nro_serie') && (document.getElementById('nro_serie').value = f.nro_serie);
+                        // Fin Actualizados
+                        if (f.codigoKitComp) document.getElementById('codigoKitComp') && (document.getElementById('codigoKitComp').value = f.codigoKitComp);
+                        
+                    }, 80);
 
-            // Ayudante para resaltar visualmente campos inválidos
-            function highlightInvalid(element) {
-                element.classList.add('input-invalid');
-                if (element.parentElement.classList.contains('input-with-button')) {
-                    element.parentElement.classList.add('input-invalid');
-                }
-                setTimeout(() => {
-                    element.classList.remove('input-invalid');
-                    if (element.parentElement.classList.contains('input-with-button')) {
-                        element.parentElement.classList.remove('input-invalid');
+                    // restaurar componentes y contador
+                    state.componentes = payload.componentes || [];
+                    state.contador = payload.contador || state.contador;
+
+                    // cargar lista visual
+                    refreshComponentList();
+                    updateLocalSummary();
+
+                    if (state.componentes.length > 0) {
+                        showMessage("Datos restaurados desde el último guardado local.", 'info');
                     }
-                }, 1500);
+                } catch (e) {
+                    console.warn('Restore autosave failed', e);
+                }
             }
 
-            // Valida solo la información de las primeras dos tarjetas (Responsables y Ubicación)
+            // Guardar una submission pendiente localmente en caso de fallo de red
+            function pushPendingSubmission(submission) {
+                try {
+                    const raw = localStorage.getItem(LS_PENDING_SUBMISSIONS);
+                    const arr = raw ? JSON.parse(raw) : [];
+                    arr.push({ submission, timestamp: Date.now() });
+                    localStorage.setItem(LS_PENDING_SUBMISSIONS, JSON.stringify(arr));
+                } catch (e) { console.warn('pushPendingSubmission', e); }
+            }
+
+            // Intentar reenviar pendientes (al detectar online)
+            async function retryPendingSubmissions() {
+                try {
+                    const raw = localStorage.getItem(LS_PENDING_SUBMISSIONS);
+                    if (!raw) return;
+                    let arr = JSON.parse(raw);
+                    if (!arr || !arr.length) return;
+
+                    showMessage(`Se detectaron ${arr.length} envíos pendientes. Reintentando...`, 'info');
+
+                    // intentar enviar cada uno (en serie para no saturar)
+                    for (let i = 0; i < arr.length; i++) {
+                        const item = arr[i];
+                        // simple reintento: usamos same sendDataToSheet y si falla lo dejamos
+                        try {
+                            // Usamos una versión de sendDataToSheet para solo red, sin limpiar form ni mostrar overlay
+                            await sendDataToSheet(item.submission, { showOverlay: false, clearOnSuccess: false, attemptNetworkOnly: true });
+                            // si ok, marcar como enviado (lo removeremos abajo)
+                            arr[i].sent = true;
+                        } catch (e) {
+                            console.warn('Pending send failed', e);
+                        }
+                    }
+                    // filtrar
+                    arr = arr.filter(x => !x.sent);
+                    if (arr.length === 0) {
+                        localStorage.removeItem(LS_PENDING_SUBMISSIONS);
+                        showMessage("Todos los envíos pendientes han sido procesados con éxito.", 'success');
+                    }
+                    else localStorage.setItem(LS_PENDING_SUBMISSIONS, JSON.stringify(arr));
+                } catch (e) { console.warn('retryPendingSubmissions', e); }
+            }
+
+            // Escucha cambios de conexión
+            window.addEventListener('online', () => {
+                showMessage('Conexión restablecida. Reintentando envíos pendientes...', 'info');
+                retryPendingSubmissions();
+            });
+
+            /**********************
+             * Validaciones (Actualizadas para el nuevo campo N° Serie y validación más visible)
+             **********************/
             function validateInfoFields() {
-                // Obtenemos referencias a los campos dinámicos (pueden ser null si aún no se ha seleccionado TIPO DE CARGO)
                 const nombreResponsableInput = document.getElementById('nombreResponsable');
                 const tipoResponsableInput = document.getElementById('tipoResponsable');
 
-                const infoInputs = [
-                    dom.tecnicoResponsable, dom.sede, dom.dependencia, dom.tipoCargo,
-                    nombreResponsableInput,
-                    tipoResponsableInput
-                ].filter(Boolean); // Filtra cualquier elemento 'null' que pudiera haber
+                const infoInputs = [dom.tecnicoResponsable, dom.sede, dom.dependencia, dom.tipoCargo].filter(Boolean);
+                let firstInvalidElement = null;
+
+                // Chequear campos principales de info
+                for (const input of infoInputs) {
+                    const value = (input.value || '').toString().trim();
+                    if (value === '' || value === 'Seleccione...' || value === '-- Seleccionar --') {
+                        animateAndFocusInvalid(input);
+                        if (!firstInvalidElement) firstInvalidElement = input;
+                    } else {
+                        clearInvalidOnInput(input);
+                    }
+                }
+                
+                // Chequear campos dinámicos de Responsable
+                if (nombreResponsableInput && !nombreResponsableInput.value.trim()) {
+                    animateAndFocusInvalid(nombreResponsableInput);
+                    if (!firstInvalidElement) firstInvalidElement = nombreResponsableInput;
+                } else {
+                    clearInvalidOnInput(nombreResponsableInput);
+                }
+                
+                if (tipoResponsableInput && !tipoResponsableInput.value.trim()) {
+                    animateAndFocusInvalid(tipoResponsableInput);
+                    if (!firstInvalidElement) firstInvalidElement = tipoResponsableInput;
+                } else {
+                    clearInvalidOnInput(tipoResponsableInput);
+                }
 
                 const tipoCargo = dom.tipoCargo.value;
                 const isUserFinalRequired = (tipoCargo === "VOL" || tipoCargo === "TER" || tipoCargo === "SEC");
 
                 if (isUserFinalRequired) {
                     const usuarioFinalInput = document.getElementById('usuarioFinalName');
-                    if (usuarioFinalInput) infoInputs.push(usuarioFinalInput);
+                    if (usuarioFinalInput && !usuarioFinalInput.value.trim()) {
+                        animateAndFocusInvalid(usuarioFinalInput);
+                        if (!firstInvalidElement) firstInvalidElement = usuarioFinalInput;
+                    } else {
+                        clearInvalidOnInput(usuarioFinalInput);
+                    }
                 }
+
+                const isValid = !firstInvalidElement;
+                if (!isValid) {
+                    showMessage("Por favor, complete todos los campos de Ubicación y Usuario Responsable.", 'error');
+                }
+                return isValid;
+            }
+            
+            // Validación específica de campos de componente
+            function validateComponentFields(tipo) {
+                const ip = document.getElementById('ip');
+                const anexo = document.getElementById('anexo');
+                // Campos actualizados
+                const marguesi = dom.marguesi;
+                const nroSerie = dom.nro_serie;
+                // Fin campos actualizados
+                const marca = dom.marca;
+                const modelo = dom.modelo;
 
                 let isValid = true;
                 let firstInvalidElement = null;
 
-                for (const input of infoInputs) {
-                    // FIX: Asegurar que el elemento existe antes de leer propiedades. (Soluciona el error original)
-                    if (!input) continue; 
-                    
-                    const isSelect = input.tagName === 'SELECT';
-                    const value = input.value.trim();
-                    
-                    // Condición de invalidez: valor vacío o valor por defecto de un select
-                    if (value === '' || (isSelect && value === 'Seleccione...' || value === '-- Seleccionar --')) {
+                // Array de inputs que se deben chequear
+                const inputsToCheck = [];
+
+                // 1. Anexo (Solo requerido para Anexo)
+                if (tipo === 'anexo') {
+                    if (!anexo || !anexo.value.trim() || anexo.value.trim().length !== 5 || !/^\d{5}$/.test(anexo.value.trim())) {
                         isValid = false;
-                        highlightInvalid(input);
-                        if (!firstInvalidElement) firstInvalidElement = input;
+                        if (!firstInvalidElement) firstInvalidElement = anexo;
+                        showFieldError(anexo, "Anexo debe ser exactamente 5 dígitos.");
+                    } else {
+                        clearFieldError(anexo);
+                    }
+                } else {
+                    // 2. IP (requerido para CPU/Laptop/Periféricos)
+                    if (['cpu', 'laptop', 'fotocopiadora', 'impresora', 'escaner'].includes(tipo)) {
+                        if (!ip || !ip.value.trim()) {
+                            isValid = false;
+                            if (!firstInvalidElement) firstInvalidElement = ip;
+                        }
+                    }
+                    
+                    // 3. Marguesi (requerido para todos excepto Anexo)
+                    if (!marguesi || !marguesi.value.trim()) {
+                        isValid = false;
+                        if (!firstInvalidElement) firstInvalidElement = marguesi;
+                    }
+                    
+                    // 4. Marca / Modelo (requerido para todos excepto Anexo)
+                    if (!marca || !marca.value.trim()) {
+                        isValid = false;
+                        if (!firstInvalidElement) firstInvalidElement = marca;
+                    }
+                    if (!modelo || !modelo.value.trim()) {
+                        isValid = false;
+                        if (!firstInvalidElement) firstInvalidElement = modelo;
+                    }
+
+                    // 5. N° Serie (requerido para todos excepto Anexo)
+                    if (!nroSerie || !nroSerie.value.trim()) {
+                        isValid = false;
+                        if (!firstInvalidElement) firstInvalidElement = nroSerie;
                     }
                 }
 
+                // Limpieza y resalte
+                [ip, marguesi, marca, modelo, nroSerie, anexo].filter(Boolean).forEach(el => {
+                    if (firstInvalidElement === el) {
+                        animateAndFocusInvalid(el);
+                    } else {
+                        clearInvalidOnInput(el);
+                    }
+                });
+                
+                // Si falla, animar y enfocar el primero
                 if (!isValid) {
-                    showMessage("Por favor, complete todos los campos de Ubicación y Usuario Responsable.", 'error');
-                    if (firstInvalidElement) firstInvalidElement.focus();
+                    showMessage("Por favor, complete los campos obligatorios marcados con 📌.", 'error');
+                    // animateAndFocusInvalid ya maneja el focus y scroll
                 }
-
+                
                 return isValid;
             }
 
-            /* ---------------------------
-             * LÓGICA DE ENVÍO A GOOGLE SHEETS
-             * --------------------------- */
 
-            async function sendDataToSheet(data) {
-                showMessage("Enviando datos a Google Sheets...", 'info');
+            /**********************
+             * Envío a Google Sheets con overlay/loader y reintento
+             **********************/
+            async function sendDataToSheet(data, options = { showOverlay: true, clearOnSuccess: true, attemptNetworkOnly: false }) {
+                // preparar componentes string (agregar campos dinámicos a la cadena)
+                const componentsString = data.components.map(c => {
+                    let parts = [`[${c.tipo}]`];
+                    if (c.codigoKitComp) parts.push(`KIT:${c.codigoKitComp}`);
+                    if (c.anexo) parts.push(`ANEXO:${c.anexo}`);
+                    if (c.ip) parts.push(`IP:${c.ip}`);
+                    if (c.marguesi) parts.push(`MARGUESI:${c.marguesi}`); // Nuevo campo
+                    if (c.patrimonial) parts.push(`PATRIMONIAL:${c.patrimonial}`);
+                    if (c.marca) parts.push(`M:${c.marca}`);
+                    if (c.modelo) parts.push(`Mo:${c.modelo}`);
+                    if (c.nro_serie) parts.push(`SN:${c.nro_serie}`); // Nuevo campo
+                    return parts.join(' ');
+                }).join(' | ');
 
-                // Aseguramos que la representación de los componentes sea clara en una sola celda
-                const componentsString = data.components.map(c =>
-                    `[${c.tipo}] KIT:${c.codigoKitComp || c.tipo.toUpperCase()} M:${c.marca} Mo:${c.modelo} C:${c.codigo}`
-                ).join(' | ');
 
                 const payload = {
-                    timestamp: new Date().toLocaleString('es-PE', {
-                        timeZone: 'America/Lima'
-                    }),
+                    timestamp: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
                     kitCode: data.kitCode,
                     tecnico: data.tecnico,
                     sede: data.sede,
@@ -598,50 +801,90 @@
                     responsableTipo: data.responsableTipo,
                     responsableNombre: data.responsableNombre,
                     usuarioFinal: data.usuarioFinal,
-                    componentes: componentsString
+                    componentes: componentsString // Cadena de componentes
                 };
 
+                // overlay
+                if (options.showOverlay) showOverlay(true, 'Conectando con servidor...');
+
                 try {
-                    // Usamos mode: 'no-cors' para evitar el error 401/CORS que Google Scripts genera
-                    await fetch(SHEET_URL, {
+                    // show incremental progress pseudo
+                    await simulateProgress(0.15);
+
+                    // Intento real de fetch
+                    const response = await fetch(SHEET_URL, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        mode: 'no-cors', // para Apps Script público
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
+                    
+                    await simulateProgress(1.0);
+                    if (options.showOverlay) showOverlay(false);
 
-                    // Asumimos éxito al completarse la petición de red (ya que no podemos leer la respuesta con no-cors)
-                    showMessage("Petición enviada. Procesando registro...", 'info');
+                    // limpieza opcional
+                    if (options.clearOnSuccess) {
+                        localStorage.removeItem(LS_KEY);
+                    }
 
-                    setTimeout(() => {
+                    if (!options.attemptNetworkOnly) {
                         showMessage("¡Envío exitoso! Datos registrados. Formulario reiniciado.", 'success');
                         resetForm();
-                    }, 1500);
-
+                    }
+                    
                 } catch (error) {
-                    // Captura errores de red (e.g., sin internet)
+                    if (options.showOverlay) showOverlay(false);
                     console.error('Error al enviar a Google Sheets:', error);
-                    showMessage(`Error de red al enviar: ${error.message}. Verifique su conexión y permisos.`, 'error');
+
+                    if (!options.attemptNetworkOnly) {
+                        pushPendingSubmission(payload);
+                        showMessage("No se pudo enviar. Los datos quedaron guardados localmente y se reintentará cuando haya conexión.", 'error');
+                    } else {
+                        showMessage(`Reintento de envío falló para ${data.kitCode}. Se conservará en pendientes.`, 'error');
+                        throw error; 
+                    }
                 }
             }
 
-            /* ---------------------------
-             * LÓGICA DE CAMPOS DINÁMICOS (USUARIO FINAL)
-             * --------------------------- */
+            // Simula progreso visual de la barra
+            function simulateProgress(target = 1.0) {
+                return new Promise((resolve) => {
+                    const bar = dom.progressBar;
+                    let value = parseFloat(bar.style.width) || 0;
+                    const targetPct = Math.min(100, Math.round(target * 100));
+                    const step = () => {
+                        if (value >= targetPct) { bar.style.width = targetPct + '%'; return resolve(); }
+                        value += Math.max(2, (targetPct - value) * 0.12);
+                        bar.style.width = Math.min(100, value) + '%';
+                        setTimeout(step, 220);
+                    };
+                    step();
+                });
+            }
 
-            function mostrarCampos() {
-                const tipo = dom.tipoCargo.value.trim().toUpperCase();
-                const contenedor = dom.camposDinamicos;
-                contenedor.innerHTML = ""; // Limpiar contenido previo
-
-                if (tipo === "") {
-                    updateLocalSummary(); // Esconde el resumen si no hay cargo
-                    return;
+            function showOverlay(show = true, subText = '') {
+                const ov = dom.overlay;
+                if (show) {
+                    ov.style.display = 'flex';
+                    ov.setAttribute('aria-hidden', 'false');
+                    dom.progressBar.style.width = '6%';
+                    dom.loaderSub.textContent = subText || 'Procesando...';
+                } else {
+                    ov.style.display = 'none';
+                    ov.setAttribute('aria-hidden', 'true');
+                    dom.progressBar.style.width = '0%';
                 }
+            }
 
-                // Bloque 1: RESPONSABLE DEL CARGO (Posición o Supervisor)
+            /**********************
+             * Campos dinámicos de Responsable
+             **********************/
+            function mostrarCampos() {
+                const tipo = (dom.tipoCargo.value || '').toString().trim().toUpperCase();
+                const contenedor = dom.camposDinamicos;
+                contenedor.innerHTML = "";
+                if (!tipo) { updateLocalSummary(); return; }
+
                 const bloqueResponsable = `
                     <div class="form-group full-width-field" id="responsable-block">
                         <label for="nombreResponsable">RESPONSABLE DEL CARGO (PERSONAL:CAS-728-276):</label>
@@ -655,215 +898,226 @@
                         </div>
                     </div>
                 `;
-
-                // Bloque 2: USUARIO FINAL DEL EQUIPO (Persona que lo utiliza - SOLO si es VOL, TER, SEC)
                 const bloqueUsuarioFinal = `
                     <div class="form-group full-width-field" id="usuario-final-block">
                         <label for="usuarioFinalName">USUARIO FINAL DEL EQUIPO (TITULAR):</label>
                         <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
                     </div>
                 `;
-
                 const isUserFinalRequired = (tipo === "VOL" || tipo === "TER" || tipo === "SEC");
-
                 let htmlContent = bloqueResponsable;
-
-                // 1. Mostrar Usuario Final si es requerido, forzando la apilación completa
-                if (isUserFinalRequired) {
-                    htmlContent += bloqueUsuarioFinal;
-                    contenedor.classList.add('stacked');
-                } else {
-                    contenedor.classList.remove('stacked');
-                }
-
+                if (isUserFinalRequired) { htmlContent += bloqueUsuarioFinal; contenedor.classList.add('stacked'); } else contenedor.classList.remove('stacked');
                 contenedor.innerHTML = htmlContent;
 
-                // Agregar listener para actualizar el resumen al escribir los nombres
-                document.getElementById('nombreResponsable')?.addEventListener('input', updateLocalSummary);
-                document.getElementById('usuarioFinalName')?.addEventListener('input', updateLocalSummary);
-                document.getElementById('tipoResponsable')?.addEventListener('change', updateLocalSummary); // También para el tipo de responsable
+                document.getElementById('nombreResponsable')?.addEventListener('input', () => { updateLocalSummary(); autosave(); });
+                document.getElementById('usuarioFinalName')?.addEventListener('input', () => { updateLocalSummary(); autosave(); });
+                document.getElementById('tipoResponsable')?.addEventListener('change', () => { updateLocalSummary(); autosave(); });
+
+                // Añadir listener para limpiar invalid al corregir el campo
+                document.getElementById('nombreResponsable')?.addEventListener('input', () => clearInvalidOnInput(document.getElementById('nombreResponsable')));
+                document.getElementById('usuarioFinalName')?.addEventListener('input', () => clearInvalidOnInput(document.getElementById('usuarioFinalName')));
+                document.getElementById('tipoResponsable')?.addEventListener('change', () => clearInvalidOnInput(document.getElementById('tipoResponsable')));
+
 
                 updateLocalSummary();
             }
 
-
-            /* ---------------------------
-             * LÓGICA DE COMPONENTES Y RESUMEN LOCAL
-             * --------------------------- */
-
+            /**********************
+             * Resumen local y UI de componentes
+             **********************/
             function updateLocalSummary() {
-                // Obtener el nombre del titular para el resumen
                 const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
                 const nombreResponsableInput = document.getElementById('nombreResponsable');
                 let titularName = "PENDIENTE";
+                if (usuarioFinalNameInput && usuarioFinalNameInput.value) titularName = usuarioFinalNameInput.value.toUpperCase().trim();
+                else if (nombreResponsableInput && nombreResponsableInput.value) titularName = nombreResponsableInput.value.toUpperCase().trim();
 
-                // Prioridad 1: Nombre del Usuario Final (si el campo existe y tiene valor)
-                if (usuarioFinalNameInput && usuarioFinalNameInput.value) {
-                    titularName = usuarioFinalNameInput.value.toUpperCase().trim();
-                } 
-                // Prioridad 2: Nombre del Responsable (si el campo existe y tiene valor)
-                else if (nombreResponsableInput && nombreResponsableInput.value) {
-                    titularName = nombreResponsableInput.value.toUpperCase().trim();
-                }
-
-                // Actualizar Resumen
                 const componentesResumenLista = document.getElementById('componentesResumenLista');
-
                 if (state.componentes.length > 0) {
                     dom.resumenKit.style.display = "block";
-                    // CORRECCIÓN DEL RESUMEN: Incluye Código del KIT y Nombre del Titular
                     dom.kitFinal.textContent = `${dom.codigoKitUsuario.value} - ${titularName}`;
-                    
-                    // Generar lista de componentes para el resumen (¡LO NUEVO!)
-                    componentesResumenLista.innerHTML = state.componentes.map(c => `
-                        <li style="margin-bottom: 5px; border-bottom: 1px dotted #ccc; padding-bottom: 3px; font-size: 0.9em;">
-                            <strong>[${c.tipo.toUpperCase()}]</strong> ${c.codigoKitComp || c.tipo.toUpperCase()}: 
-                            <span style="font-style: italic;">${c.marca} ${c.modelo}</span> (S/N: ${c.codigo})
-                        </li>
-                    `).join('');
+                    componentesResumenLista.innerHTML = state.componentes.map(c => {
+                        let parts = [`<strong>[${c.tipo.toUpperCase()}]</strong>`];
+                        if (c.codigoKitComp) parts.push(`${c.codigoKitComp}:`);
+                        if (c.anexo) parts.push(`ANEXO: ${c.anexo}`);
+                        
+                        // Añadir IP/Marca/Modelo/Patrimonial solo si existen
+                        let details = [];
+                        if (c.ip) details.push(`IP: ${c.ip}`);
+                        if (c.marca && c.modelo) details.push(`${c.marca} ${c.modelo}`);
+                        if (c.patrimonial) details.push(`Patrimonial: ${c.patrimonial}`);
+                        
+                        if (details.length > 0) {
+                           parts.push(`<span style="font-style:italic;">${details.join(' | ')}</span>`);
+                        }
+                        
+                        // Marguesi y Serie al final
+                        if (c.marguesi) parts.push(`(Marguesi: ${c.marguesi})`);
+                        if (c.nro_serie) parts.push(`(SN: ${c.nro_serie})`);
 
+                        return `
+                            <li style="margin-bottom:6px;border-bottom:1px dotted #ccc;padding-bottom:4px;font-size:0.95em;">
+                                ${parts.join(' ')}
+                            </li>
+                        `;
+                    }).join('');
                 } else {
                     dom.resumenKit.style.display = "none";
                     componentesResumenLista.innerHTML = '';
                 }
             }
 
-            function mostrarFormulario() {
-                // Bloquear el acceso al formulario de componentes si los campos de info no están llenos
-                if (!validateInfoFields()) {
+            function refreshComponentList() {
+                dom.listaComponentes.innerHTML = '';
+                for (const c of state.componentes) {
+                    const li = document.createElement('li');
+                    let parts = [`[${c.tipo.toUpperCase()}]`];
+                    if (c.codigoKitComp) parts.push(`${c.codigoKitComp}`);
+                    if (c.anexo) parts.push(`Anexo: ${c.anexo}`);
+                    if (c.ip) parts.push(`IP: ${c.ip}`);
+                    if (c.patrimonial) parts.push(`Patrimonial: ${c.patrimonial}`);
+                    if (c.marca) parts.push(`Marca: ${c.marca}`);
+                    if (c.modelo) parts.push(`Modelo: ${c.modelo}`);
+                    if (c.marguesi) parts.push(`Marguesi: ${c.marguesi}`);
+                    if (c.nro_serie) parts.push(`N° Serie: ${c.nro_serie}`);
+                    
+                    li.textContent = parts.join(' - ');
+                    dom.listaComponentes.appendChild(li);
+                }
+            }
+            
+            // Recibe un booleano para indicar si debe validar campos de info previa.
+            function mostrarFormulario(validateBefore = true) {
+                const tipoSeleccionado = document.getElementById('tipoComponente').value;
+                if (validateBefore && tipoSeleccionado && !validateInfoFields()) {
                     dom.tipoComponente.value = "";
                     dom.formularioComponente.style.display = "none";
                     return;
                 }
                 
+                // Actualizar los campos dinámicos primero
+                actualizarCamposPorTipo(tipoSeleccionado); 
+                
                 const tipo = dom.tipoComponente.value;
                 dom.formularioComponente.style.display = tipo ? "block" : "none";
-
+                
                 if (tipo) {
                     const codigoKitUsuario = dom.codigoKitUsuario.value;
-                    const isMultifuncional = tipo === "multifuncional";
+                    const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking'].includes(tipo);
 
-                    dom.codigoKitCompContainer.style.display = isMultifuncional ? "none" : "block";
-
-                    // Calculamos el contador para generar el código, pero no lo incrementamos hasta que se agrega
-                    const currentCount = state.contador[tipo] || 1;
+                    dom.codigoKitCompContainer.style.display = isKitCompRequired ? "block" : "none";
                     
-                    if (!isMultifuncional) {
+                    // Solo si es un componente de KIT se auto-genera el código
+                    if (isKitCompRequired) {
+                        const currentCount = state.contador[tipo] || 1;
                         const autogen = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(currentCount).padStart(4, '0')}`;
                         dom.codigoKitComp.value = autogen;
+                    } else {
+                        dom.codigoKitComp.value = ""; // Limpiar si no aplica
                     }
 
-                    // Limpiar campos
-                    dom.codigo.value = "";
-                    dom.marca.value = "";
-                    dom.modelo.value = "";
+                    // Limpiar campos de componente
+                    if (validateBefore) {
+                        document.getElementById('anexo') && (document.getElementById('anexo').value = "");
+                        document.getElementById('ip') && (document.getElementById('ip').value = "");
+                        document.getElementById('patrimonial') && (document.getElementById('patrimonial').value = "");
+                        dom.marguesi.value = ""; // Limpiar Marguesi
+                        dom.nro_serie.value = ""; // Limpiar N° Serie
+                        dom.marca.value = "";
+                        dom.modelo.value = "";
+                    }
 
-                    // Detener cualquier escaneo si se cambia de componente
                     stopScanning(false);
                 }
             }
 
             function agregarComponente() {
-                // Validación 1: Verificar que los campos de Información General/Usuario estén llenos
-                if (!validateInfoFields()) {
-                    // validateInfoFields() ya muestra el mensaje de error.
+                if (!validateInfoFields()) return;
+                const tipo = dom.tipoComponente.value;
+                if (!tipo) {
+                    showMessage("Por favor, seleccione un Tipo de Componente.", 'error');
+                    animateAndFocusInvalid(dom.tipoComponente);
                     return;
                 }
                 
-                const tipo = dom.tipoComponente.value;
-                const codigo = dom.codigo.value.toUpperCase().trim();
-                const marca = dom.marca.value.toUpperCase().trim();
-                const modelo = dom.modelo.value.toUpperCase().trim();
+                if (!validateComponentFields(tipo)) return; // Nueva validación de campos específicos
+                
+                // Recoger todos los valores relevantes (incluyendo los nuevos campos dinámicos)
+                const marguesi = (dom.marguesi.value || '').toUpperCase().trim();
+                const nroSerie = (dom.nro_serie.value || '').toUpperCase().trim();
+                const marca = (dom.marca.value || '').toUpperCase().trim();
+                const modelo = (dom.modelo.value || '').toUpperCase().trim();
+                const anexo = (document.getElementById('anexo') || {}).value || '';
+                const ip = (document.getElementById('ip') || {}).value || '';
+                const patrimonial = (document.getElementById('patrimonial') || {}).value || '';
 
-                // Validación 2: Campos del componente
-                if (!tipo || !codigo || !marca || !modelo) {
-                    showMessage("Por favor, complete todos los campos (Seleccione Componente, Código, Marca y Modelo).", 'error');
-                    // Highlight required fields in the component form
-                    if (!tipo) highlightInvalid(dom.tipoComponente);
-                    if (!codigo) highlightInvalid(document.getElementById('codigo'));
-                    if (!marca) highlightInvalid(document.getElementById('marca'));
-                    if (!modelo) highlightInvalid(document.getElementById('modelo'));
-                    return;
-                }
 
                 let codigoKitComp = "SIN-KIT";
-                if (tipo !== "multifuncional") {
-                    // OBTENEMOS el valor del campo autogenerado que ya está visible
-                    codigoKitComp = dom.codigoKitComp.value;
-                    // AHORA sí incrementamos el contador para el PRÓXIMO componente
-                    state.contador[tipo] = (state.contador[tipo] || 0) + 1; 
+                const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking'].includes(tipo);
+                
+                if (isKitCompRequired) {
+                    codigoKitComp = dom.codigoKitComp.value || `${dom.codigoKitUsuario.value}-${tipo.toUpperCase()}-${String(state.contador[tipo] || 1).padStart(4, '0')}`;
+                    state.contador[tipo] = (state.contador[tipo] || 1) + 1;
                 }
-
-                // Guardar en array
-                state.componentes.push({
-                    tipo,
-                    codigo,
-                    marca,
-                    modelo,
-                    codigoKitComp
+                
+                // Componente final
+                state.componentes.push({ 
+                    tipo, 
+                    marguesi: tipo !== 'anexo' ? marguesi : null, // Marguesi
+                    nro_serie: tipo !== 'anexo' ? nroSerie : null, // N° Serie
+                    marca: tipo !== 'anexo' ? marca : null, 
+                    modelo: tipo !== 'anexo' ? modelo : null, 
+                    codigoKitComp: isKitCompRequired ? codigoKitComp : null, // null si no aplica
+                    anexo: tipo === 'anexo' ? anexo : null,
+                    ip: ['cpu', 'laptop', 'fotocopiadora', 'impresora', 'escaner'].includes(tipo) ? ip : null,
+                    patrimonial: patrimonial || null
                 });
-
-                // Mostrar en lista de componentes añadidos
-                const li = document.createElement("li");
-                li.textContent = `[${tipo.toUpperCase()}] ${codigoKitComp} - Marca: ${marca}, Modelo: ${modelo}, Código: ${codigo}`;
-                dom.listaComponentes.appendChild(li);
-
-                // ACTUALIZA RESUMEN LOCAL INSTANTÁNEAMENTE
+                
+                refreshComponentList();
                 updateLocalSummary();
                 showMessage(`Componente ${tipo.toUpperCase()} agregado.`, 'success');
-
-                // Reset y ocultar formulario de componente
+                beep(0.06, 880, 0.06);
+                
+                // autosave y limpiar formulario de componente
+                autosave();
                 dom.tipoComponente.value = "";
-                mostrarFormulario(); // Oculta el formulario y limpia campos
+                mostrarFormulario(false); // No validar antes de limpiar
             }
 
             function resetForm() {
-                // 1. Limpiar campos de Información General y Usuario
                 const allInputs = document.querySelectorAll('input[type="text"]:not([readonly]), select');
-                allInputs.forEach(input => {
-                    if (input.id !== 'codigoKitUsuario' && input.id !== 'tipoResponsable') {
-                        input.value = (input.tagName === 'SELECT') ? '' : '';
-                    }
+                allInputs.forEach(input => { 
+                    if (input.id === 'tipoResponsable') return; 
+                    if (input.tagName === 'SELECT') input.value = ''; 
+                    else input.value = ''; 
+                    clearInvalidOnInput(input);
                 });
-
-                // 2. Limpiar listas y contadores
                 dom.listaComponentes.innerHTML = "";
                 state.componentes = [];
                 state.contador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1 };
-
-                // 3. Resetear campos dinámicos
                 dom.tipoCargo.value = '';
                 mostrarCampos();
-
-                // 4. Ocultar resumen local
                 dom.resumenKit.style.display = "none";
+                dom.formularioComponente.style.display = "none";
+                // limpiar autosave
+                localStorage.removeItem(LS_KEY);
             }
 
-
             function enviarFormulario() {
-                // Validación 1: Info General y Usuario
-                if (!validateInfoFields()) {
-                    return;
-                }
-
-                // Validación 2: Componentes
+                if (!validateInfoFields()) return;
                 if (state.componentes.length === 0) {
                     showMessage("Debe agregar al menos un componente al KIT antes de enviar.", 'error');
                     return;
                 }
-
-                // Referencias finales
+                
+                // Recoger datos finales
                 const tipoResponsableInput = document.getElementById('tipoResponsable');
                 const nombreResponsableInput = document.getElementById('nombreResponsable');
                 const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
                 
-                // 1. Obtener nombres
                 const nombreResponsable = nombreResponsableInput ? nombreResponsableInput.value.toUpperCase().trim() : "";
-                const nombreUsuarioFinal = (usuarioFinalNameInput && usuarioFinalNameInput.value)
-                    ? usuarioFinalNameInput.value.toUpperCase().trim()
-                    : nombreResponsable;
-
-                // --- PREPARAR DATOS PARA ENVÍO ---
+                const nombreUsuarioFinal = (usuarioFinalNameInput && usuarioFinalNameInput.value) ? usuarioFinalNameInput.value.toUpperCase().trim() : nombreResponsable;
+                
                 const submissionData = {
                     kitCode: dom.codigoKitUsuario.value,
                     tecnico: dom.tecnicoResponsable.options[dom.tecnicoResponsable.selectedIndex].text,
@@ -873,159 +1127,315 @@
                     responsableTipo: tipoResponsableInput ? tipoResponsableInput.value : "N/A",
                     responsableNombre: nombreResponsable,
                     usuarioFinal: nombreUsuarioFinal,
-                    components: state.componentes
+                    components: state.componentes // Se envía el array de objetos con todos los campos
                 };
 
-                // 2. Enviar a Google Sheets y resetear si es exitoso
-                sendDataToSheet(submissionData);
+                // Intentar enviar: si falla, push a pendientes
+                sendDataToSheet(submissionData, { showOverlay: true, clearOnSuccess: true, attemptNetworkOnly: false });
+            }
+
+            /**********************
+             * QUAGGA + mejoras lector + toggles
+             **********************/
+            
+            // === NUEVO: mostrar campos dinámicos por tipo de componente ===
+            function actualizarCamposPorTipo(tipo) {
+                // 1. Obtener referencias de grupos de campos
+                const anexoGroup = document.getElementById('anexo-group');
+                const ipGroup = document.getElementById('ip-group');
+                const marguesiGroup = document.getElementById('marguesi-group'); // Campo Marguesi (Código de Barras)
+                const patrimonialGroup = document.getElementById('patrimonial-group');
+                const marcaGroup = document.getElementById('marca-group');
+                const modeloGroup = document.getElementById('modelo-group');
+                const nroSerieGroup = document.getElementById('nro_serie-group'); // Campo N° Serie
+
+                // 2. Lógica de visibilidad según el tipo
+                const isCPUOrLaptop = ['cpu', 'laptop'].includes(tipo);
+                const isMonitorTecladoDocking = ['monitor', 'teclado', 'docking'].includes(tipo);
+                const isPeriferico = ['fotocopiadora', 'impresora', 'escaner'].includes(tipo);
+                const isAnexo = tipo === 'anexo';
+
+                // ** Lógica Anexo **
+                anexoGroup.style.display = isAnexo ? 'block' : 'none';
+                
+                // ** Lógica IP **
+                const mostrarIP = isCPUOrLaptop || isPeriferico;
+                ipGroup.style.display = mostrarIP ? 'block' : 'none';
+
+                // ** Lógica Marguesi / Patrimonial / Marca / Modelo / N° Serie **
+                const mostrarCamposEstandar = !isAnexo;
+                marguesiGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                patrimonialGroup.style.display = mostrarCamposEstandar ? 'block' : 'none'; // Opcional pero visible
+                marcaGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                modeloGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                nroSerieGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                
+                // 3. Limpiar errores al cambiar de tipo
+                [document.getElementById('anexo'), document.getElementById('ip'), dom.marguesi, document.getElementById('patrimonial'), dom.marca, dom.modelo, dom.nro_serie].filter(Boolean).forEach(el => clearFieldError(el));
+                
+                // 4. Agregar listeners para limpiar invalid/error al corregir el input
+                [document.getElementById('anexo'), document.getElementById('ip'), dom.marguesi, document.getElementById('patrimonial'), dom.marca, dom.modelo, dom.nro_serie].filter(Boolean).forEach(el => {
+                    clearInvalidOnInput(el); 
+                });
             }
 
 
-            /* ---------------------------
-             * LÓGICA DE ESCÁNER (QUAGGAJS)
-             * --------------------------- */
-
-            function startScanning() {
-                if (!state.activeInput) return;
-                showMessage("Escaneando... Asegúrese de que el código de barras esté visible en la cámara.", 'info');
-
-                dom.videoContainer.style.display = 'block';
-                dom.retryBtn.style.display = "none";
-                state.scanning = true;
-
-                Quagga.init({
+            // Configuración adaptable para mejores lecturas (más tolerance)
+            function quaggaConfigForFacing(facingMode) {
+                return {
                     inputStream: {
-                        name: "Live",
                         type: "LiveStream",
                         target: dom.videoContainer,
                         constraints: {
-                            facingMode: "environment"
-                        }
+                            facingMode: facingMode,
+                            width: { min: 320, ideal: 1280 },
+                            height: { min: 240, ideal: 720 },
+                            aspectRatio: { ideal: 16/9 }
+                        },
+                         area: { // Región central para escanear únicamente dentro del marco verde
+                            top: "30%",
+                            right: "10%",
+                            left: "10%",
+                            bottom: "30%"
+                        },
+                    },
+                    locator: {
+                        halfSample: true,
+                        patchSize: "large", // "large" to be more tolerant
+                        debug: false
                     },
                     decoder: {
-                        readers: ["code_128_reader", "ean_reader", "code_39_reader"]
+                        readers: [
+                            "code_128_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_39_reader",
+                            "code_39_vin_reader",
+                            "codabar_reader",
+                            "upc_reader",
+                            "upc_e_reader",
+                            "i2of5_reader"
+                        ]
                     },
                     locate: true,
-                    frequency: 10,
-                }, function (err) {
-                    if (err) {
-                        console.error(err);
-                        showMessage("Error al iniciar la cámara. Asegúrese de tener permisos y que la cámara no esté en uso.", 'error');
-                        stopScanning(false);
-                        return;
-                    }
-                    Quagga.start();
-                });
+                    frequency: 10
+                };
+            }
 
-                Quagga.onDetected(function (data) {
-                    if (state.scanning && state.activeInput) {
-                        const result = data.codeResult.code;
+            let quaggaInited = false;
+            
+            // Función de detección: SOLO para el campo MARGUESI (Código de barras)
+            function onQuaggaDetected(data) {
+                // Debounce rápido por si detecciones múltiples
+                const now = Date.now();
+                if (now - state.lastScanTimestamp < 800) return;
+                state.lastScanTimestamp = now;
+
+                if (state.scanning && state.activeInput) {
+                    const result = data && data.codeResult && data.codeResult.code ? data.codeResult.code : null;
+                    const score = data.codeResult.startInfo.error || 0;
+                    
+                    // Validación de código: 6 a 20 caracteres alfanuméricos (para Marguesi/SN)
+                    if (result && /^[0-9A-Z]{6,20}$/i.test(result) && score <= 0.15) {
                         state.activeInput.value = result.toUpperCase();
+                        clearInvalidOnInput(state.activeInput); // Limpia la clase invalid y el error de campo
+                        flashFrame(); // Efecto visual verde
                         showMessage("Código detectado: " + result, 'success');
+                        beep(0.04, 1200, 0.04);
                         stopScanning(true);
+                        autosave();
                     }
-                });
+                }
+            }
 
-                // Dibujar el recuadro de localización
-                Quagga.onProcessed(function (result) {
-                    const drawingCtx = Quagga.canvas.ctx.overlay;
-                    const drawingCanvas = Quagga.canvas.dom.overlay;
 
-                    if (result) {
-                        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
-                        if (result.codeResult && result.codeResult.code) {
-                            Quagga.ImageDebug.drawPath(result.line, {
-                                x: 'x',
-                                y: 'y'
-                            }, drawingCtx, {
-                                color: "red",
-                                lineWidth: 3
-                            });
+            function startScanning() {
+                if (!state.activeInput) return;
+                
+                // Solo permitir escaneo en el campo MARGUESI
+                if (state.activeInput.id !== 'marguesi') {
+                    showMessage("El escáner solo puede usarse en el campo MARGUESI (Código de barras).", 'info');
+                    return;
+                }
+                
+                const tipo = dom.tipoComponente.value;
+                if (tipo === 'anexo') {
+                    showMessage("El componente 'Anexo' solo requiere el N° de Anexo (5 dígitos).", 'info');
+                    return;
+                }
+                
+                showMessage("Escaneando... Mantenga el código visible y estable en el recuadro verde.", 'info');
+                dom.videoContainer.style.display = 'block';
+                document.querySelector('.scan-frame').style.display = 'block'; // Mostrar el marco guía
+                dom.retryBtn.style.display = "none";
+                state.scanning = true;
+                
+                try {
+                    // Si ya se inicializó para otra facingMode, reiniciar
+                    if (quaggaInited) {
+                        try { Quagga.stop(); } catch (e) {}
+                        quaggaInited = false;
+                    }
+                    const cfg = quaggaConfigForFacing(state.currentFacingMode);
+                    Quagga.init(cfg, function (err) {
+                        if (err) {
+                            console.error('Quagga init error', err);
+                            showMessage("Error al iniciar la cámara. Verifique permisos y compatibilidad.", 'error');
+                            stopScanning(false);
+                            return;
                         }
-                    }
-                });
+                        quaggaInited = true;
+                        Quagga.start();
+                    });
+
+                    // Limpieza de listeners previos (evita duplicados)
+                    try { Quagga.offDetected(onQuaggaDetected); } catch (_) {}
+                    Quagga.onDetected(onQuaggaDetected); // Usar la función mejorada
+
+                    // Configurar reintento automático
+                    const retryTimeout = setTimeout(() => {
+                        if (state.scanning) {
+                            dom.retryBtn.style.display = "block";
+                            showMessage("No se detectó código. Ajuste la cámara o presione 'Volver a intentar'.", 'info');
+                        }
+                    }, 8000); 
+                    dom.retryBtn.dataset._rt = retryTimeout;
+                } catch (e) {
+                    console.error('startScanning error', e);
+                    showMessage("No se pudo iniciar el escaneo.", 'error');
+                    stopScanning(false);
+                }
             }
 
             function stopScanning(showRetry = true) {
                 if (!state.scanning) return;
-
-                Quagga.stop();
+                try { 
+                    if (Quagga && Quagga.stop) Quagga.stop(); 
+                } catch (e) { 
+                    console.warn(e); 
+                }
                 state.scanning = false;
                 dom.videoContainer.style.display = 'none';
+                document.querySelector('.scan-frame').style.display = 'none'; // Ocultar el marco guía
+                if (showRetry && state.activeInput) dom.retryBtn.style.display = "block"; else dom.retryBtn.style.display = "none";
+                // limpiar timeout si existe
+                try {
+                    const rt = dom.retryBtn.dataset._rt;
+                    if (rt) clearTimeout(Number(rt));
+                    dom.retryBtn.dataset._rt = '';
+                } catch (e) {}
+            }
 
-                if (showRetry && state.activeInput) {
-                    dom.retryBtn.style.display = "block";
+            // Cambiar cámara (facingMode)
+            function switchCamera() {
+                state.currentFacingMode = (state.currentFacingMode === 'environment') ? 'user' : 'environment';
+                if (state.scanning) {
+                    stopScanning(false);
+                    setTimeout(() => startScanning(), 350);
                 } else {
-                    dom.retryBtn.style.display = "none";
+                    showMessage(`Cámara cambiada a: ${state.currentFacingMode}`, 'info');
                 }
             }
 
-            /* ---------------------------
-             * INICIALIZACIÓN
-             * --------------------------- */
+            // Intento de togglear linterna/torch
+            async function toggleTorch() {
+                try {
+                    if (!Quagga || !Quagga.cameraAccess) { showMessage('No disponible en este navegador', 'error'); return; }
+                    const activeTrack = Quagga.cameraAccess.getActiveTrack();
+                    if (!activeTrack) { showMessage('No se detectó cámara activa', 'error'); return; }
+                    const capabilities = activeTrack.getCapabilities ? activeTrack.getCapabilities() : {};
+                    if (!capabilities.torch) { showMessage('Linterna no disponible en esta cámara', 'info'); return; }
+                    // togglear
+                    const current = activeTrack.getSettings().torch || false;
+                    await activeTrack.applyConstraints({ advanced: [{ torch: !current }] });
+                    showMessage(!current ? 'Linterna activada' : 'Linterna desactivada', 'success');
+                } catch (e) { console.warn('toggleTorch', e); showMessage('No fue posible cambiar la linterna', 'error'); }
+            }
 
+            /**********************
+             * Inicialización y listeners
+             **********************/
             function initApp() {
-                // Iniciar campos dinámicos al cargar
-                mostrarCampos();
-
-                // Configurar eventos para inputs escaneables
-                dom.scanableInputs.forEach(input => {
-                    input.addEventListener('input', () => {
-                        input.value = input.value.toUpperCase();
-                    });
-                });
-
-                // Configurar el evento del botón de escaneo
-                document.querySelectorAll(".scan-btn").forEach(btn => {
-                    const inputId = btn.getAttribute('data-input-id');
-                    const input = document.getElementById(inputId);
-
-                    btn.addEventListener("click", async (e) => {
-                        e.preventDefault();
-                        state.activeInput = input;
-
-                        if (state.scanning) {
-                            stopScanning(true);
-                        } else {
-                            dom.retryBtn.style.display = "none";
-                            startScanning();
-                        }
-                    });
-                });
-
-                // Configurar evento del botón de reintento
-                dom.retryBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (state.activeInput) {
-                        startScanning();
-                    }
-                });
-
-                // Asignar referencias a los selects principales
+                // Asignar DOM refs principales
                 dom.tecnicoResponsable = document.getElementById("tecnicoResponsable");
                 dom.sede = document.getElementById("sede");
                 dom.dependencia = document.getElementById("dependencia");
                 
-                // Agregar listeners de cambio a los selects principales para validar info al cambiar
-                dom.tecnicoResponsable.addEventListener('change', validateInfoFields);
-                dom.sede.addEventListener('change', validateInfoFields);
-                dom.dependencia.addEventListener('change', validateInfoFields);
-                dom.tipoCargo.addEventListener('change', validateInfoFields);
+                // Restaurar autosave primero
+                restoreAutosave();
+
+                // auto upper para scanables y campos de texto
+                document.querySelectorAll('input[type="text"]').forEach(input => {
+                    input.addEventListener('input', () => {
+                        // Excluir el campo de IP de la conversión a mayúsculas
+                        if (input.id !== 'ip') { 
+                            input.value = input.value.toUpperCase();
+                        }
+                        autosave();
+                    });
+                    // Agregar listener para limpiar invalid al teclear/corregir
+                    clearInvalidOnInput(input);
+                });
+
+
+                // Botones de escaneo: SOLO para el campo MARGUESI (ID: marguesi)
+                document.querySelectorAll(".scan-btn").forEach(btn => {
+                    const inputId = btn.getAttribute('data-input-id');
+                    const input = document.getElementById(inputId);
+                    btn.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        state.activeInput = input;
+                        if (state.scanning) { stopScanning(true); }
+                        else { dom.retryBtn.style.display = "none"; startScanning(); }
+                    });
+                });
+
+                // Retry button
+                dom.retryBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (state.activeInput) startScanning();
+                });
+
+                // Switch camera small button 
+                dom.switchCameraBtn && dom.switchCameraBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchCamera();
+                });
+                dom.toggleTorchBtn && dom.toggleTorchBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    toggleTorch();
+                });
+
+                // Asignar selects para validación + autosave
+                dom.tecnicoResponsable.addEventListener('change', () => { validateInfoFields(); autosave(); });
+                dom.sede.addEventListener('change', () => { validateInfoFields(); autosave(); });
+                dom.dependencia.addEventListener('change', () => { validateInfoFields(); autosave(); });
+                dom.tipoCargo.addEventListener('change', () => { validateInfoFields(); mostrarCampos(); autosave(); });
+
+                // botones small: accesibilidad táctil
+                document.querySelectorAll('select').forEach(s => s.addEventListener('touchstart', () => {}));
+
+                // Reintentar pendientes al inicio si online
+                if (navigator.onLine) retryPendingSubmissions();
+
+                // Guardar en local cada X segundos si hay cambios frecuentes
+                setInterval(autosave, 5000);
             }
 
-            // Devolver las funciones públicas
+            // Ejecutar init
+            document.addEventListener('DOMContentLoaded', initApp);
+
+            // Exponer funciones públicas (incluyendo estado para Quagga.onDetected)
             return {
                 initApp: initApp,
                 mostrarFormulario: mostrarFormulario,
                 agregarComponente: agregarComponente,
                 enviarFormulario: enviarFormulario,
-                mostrarCampos: mostrarCampos
+                mostrarCampos: mostrarCampos,
+                stopScanning: stopScanning,
+                state: state // Exponer estado para el lector de códigos
             };
         })();
-
-        // Iniciar la aplicación cuando el DOM esté completamente cargado
-        document.addEventListener('DOMContentLoaded', window.app.initApp);
     </script>
 </body>
-
 </html>
