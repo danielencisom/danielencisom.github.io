@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
@@ -140,8 +141,22 @@ function flashFrame() {
         #listaComponentes{list-style:none;padding:0;margin:0;}
         #listaComponentes li{background:#e3f2fd;margin-bottom:8px;padding:10px;border-left:5px solid var(--primary-color);border-radius:4px;font-size:0.95em;}
         #resumenKit{background:#e0f2f1;border-left:5px solid var(--secondary-color);}
-        #video-container{margin-top:12px;position:relative;width:100%;min-height:220px;overflow:hidden;background:#000;border-radius:4px;}
-        #video-container video,#video-container canvas{max-width:100%;width:100%;display:block;}
+        
+        /* FIX: Asegura que el contenedor de video tenga una altura fija en móvil */
+        #video-container{margin-top:12px;position:relative;width:100%;height:300px;overflow:hidden;background:#000;border-radius:4px;}
+        
+        /* FIX: Esto hace que el video/canvas cubra el área sin bordes negros, permitiendo recorte si el aspecto no coincide */
+        #video-container video,#video-container canvas{
+            max-width:100%;
+            width:100%;
+            height:100%; 
+            display:block;
+            object-fit:cover; /* CRÍTICO: Asegura que el stream cubre toda el área */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
         .dynamic-fields{display:grid;grid-template-columns:1fr;gap:12px;margin-top:4px;}
         .responsable-group{display:flex;gap:10px;}
         .responsable-group select{width:30%;flex-shrink:0;}
@@ -165,57 +180,57 @@ function flashFrame() {
         .video-controls{position:absolute;right:10px;top:10px;z-index:20;display:flex;gap:8px;align-items:center;}
         .small-btn{background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:8px;border-radius:8px;cursor:pointer;}
         .small-btn:hover{background:rgba(0,0,0,0.6);}
-    
+        
 /* === Mejoras de animación y validación (color rojo) === */
 @keyframes shake {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
-  100% { transform: translateX(0); }
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+    100% { transform: translateX(0); }
 }
 .input-shake { animation: shake 520ms ease-in-out; }
 
 .input-invalid {
-  border-color: var(--invalid-color) !important;
-  box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
+    border-color: var(--invalid-color) !important;
+    box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
 }
 /* Estilo para el padre .input-with-button cuando es inválido */
 .input-with-button.input-invalid {
-  border-color: var(--invalid-color) !important;
-  box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
+    border-color: var(--invalid-color) !important;
+    box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
 }
 
 .overlay.show { display:flex; animation: overlayFade .28s ease forwards; }
 @keyframes overlayFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .progress-bar { transition: width 420ms cubic-bezier(0.2,0.9,0.2,1); }
 
 .field-error {
-  color: var(--invalid-color);
-  font-size: 0.85em;
-  margin-top: 6px;
-  display: block;
-  font-weight: 500; /* Asegurar que el mensaje de error resalte */
+    color: var(--invalid-color);
+    font-size: 0.85em;
+    margin-top: 6px;
+    display: block;
+    font-weight: 500; /* Asegurar que el mensaje de error resalte */
 }
 
 /* === Marco guía de escaneo de códigos === */
 .scan-frame {
-  position: absolute;
-  top: 30%;
-  left: 10%;
-  width: 80%;
-  height: 40%;
-  border: 3px solid rgba(0, 255, 0, 0.8);
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-  z-index: 10;
-  pointer-events: none;
-  border-radius: 8px;
-  transition: all 0.4s ease;
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    width: 80%;
+    height: 40%;
+    border: 3px solid rgba(0, 255, 0, 0.8);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+    z-index: 10;
+    pointer-events: none;
+    border-radius: 8px;
+    transition: all 0.4s ease;
 }
 </style>
 </head>
@@ -393,11 +408,10 @@ function flashFrame() {
     <script>
         /*******************************************************************
          * App: Registro de Equipos - Versión con autosave + loader + mejora lector
-         * Comentarios en español, mantener interacciones y estilos originales
          *******************************************************************/
 
         window.app = (function () {
-            // URL de Google Apps Script (mantén la tuya)
+            // URL de Google Apps Script 
             const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec";
 
             // Estado interno
@@ -421,12 +435,12 @@ function flashFrame() {
                 codigoKitUsuario: document.getElementById("codigoKitUsuario"),
                 codigoKitCompContainer: document.getElementById("codigoKitCompContainer"),
                 codigoKitComp: document.getElementById("codigoKitComp"),
-                // Referencias de campos actualizadas
+                // Referencias de campos
                 marguesi: document.getElementById("marguesi"), // MARGUESI (antes 'codigo')
                 nro_serie: document.getElementById("nro_serie"), // NUEVO N° Serie
                 marca: document.getElementById("marca"), 
                 modelo: document.getElementById("modelo"), 
-                // Fin referencias de campos actualizadas
+                // Fin referencias de campos
                 listaComponentes: document.getElementById("listaComponentes"),
                 resumenKit: document.getElementById("resumenKit"),
                 kitFinal: document.getElementById("kitFinal"),
@@ -709,9 +723,6 @@ function flashFrame() {
                 let isValid = true;
                 let firstInvalidElement = null;
 
-                // Array de inputs que se deben chequear
-                const inputsToCheck = [];
-
                 // 1. Anexo (Solo requerido para Anexo)
                 if (tipo === 'anexo') {
                     if (!anexo || !anexo.value.trim() || anexo.value.trim().length !== 5 || !/^\d{5}$/.test(anexo.value.trim())) {
@@ -720,6 +731,7 @@ function flashFrame() {
                         showFieldError(anexo, "Anexo debe ser exactamente 5 dígitos.");
                     } else {
                         clearFieldError(anexo);
+                        clearInvalidOnInput(anexo);
                     }
                 } else {
                     // 2. IP (requerido para CPU/Laptop/Periféricos)
@@ -765,7 +777,6 @@ function flashFrame() {
                 // Si falla, animar y enfocar el primero
                 if (!isValid) {
                     showMessage("Por favor, complete los campos obligatorios marcados con 📌.", 'error');
-                    // animateAndFocusInvalid ya maneja el focus y scroll
                 }
                 
                 return isValid;
@@ -809,7 +820,7 @@ function flashFrame() {
 
                 try {
                     // show incremental progress pseudo
-                    await simulateProgress(0.15);
+                    if (options.showOverlay) await simulateProgress(0.15);
 
                     // Intento real de fetch
                     const response = await fetch(SHEET_URL, {
@@ -819,7 +830,7 @@ function flashFrame() {
                         body: JSON.stringify(payload)
                     });
                     
-                    await simulateProgress(1.0);
+                    if (options.showOverlay) await simulateProgress(1.0);
                     if (options.showOverlay) showOverlay(false);
 
                     // limpieza opcional
@@ -909,14 +920,9 @@ function flashFrame() {
                 if (isUserFinalRequired) { htmlContent += bloqueUsuarioFinal; contenedor.classList.add('stacked'); } else contenedor.classList.remove('stacked');
                 contenedor.innerHTML = htmlContent;
 
-                document.getElementById('nombreResponsable')?.addEventListener('input', () => { updateLocalSummary(); autosave(); });
-                document.getElementById('usuarioFinalName')?.addEventListener('input', () => { updateLocalSummary(); autosave(); });
-                document.getElementById('tipoResponsable')?.addEventListener('change', () => { updateLocalSummary(); autosave(); });
-
-                // Añadir listener para limpiar invalid al corregir el campo
-                document.getElementById('nombreResponsable')?.addEventListener('input', () => clearInvalidOnInput(document.getElementById('nombreResponsable')));
-                document.getElementById('usuarioFinalName')?.addEventListener('input', () => clearInvalidOnInput(document.getElementById('usuarioFinalName')));
-                document.getElementById('tipoResponsable')?.addEventListener('change', () => clearInvalidOnInput(document.getElementById('tipoResponsable')));
+                document.getElementById('nombreResponsable')?.addEventListener('input', () => { updateLocalSummary(); autosave(); clearInvalidOnInput(document.getElementById('nombreResponsable')); });
+                document.getElementById('usuarioFinalName')?.addEventListener('input', () => { updateLocalSummary(); autosave(); clearInvalidOnInput(document.getElementById('usuarioFinalName')); });
+                document.getElementById('tipoResponsable')?.addEventListener('change', () => { updateLocalSummary(); autosave(); clearInvalidOnInput(document.getElementById('tipoResponsable')); });
 
 
                 updateLocalSummary();
@@ -933,9 +939,12 @@ function flashFrame() {
                 else if (nombreResponsableInput && nombreResponsableInput.value) titularName = nombreResponsableInput.value.toUpperCase().trim();
 
                 const componentesResumenLista = document.getElementById('componentesResumenLista');
+
                 if (state.componentes.length > 0) {
                     dom.resumenKit.style.display = "block";
                     dom.kitFinal.textContent = `${dom.codigoKitUsuario.value} - ${titularName}`;
+                    
+                    // Generar lista de componentes para el resumen (¡CON DETALLES COMPLETOS!)
                     componentesResumenLista.innerHTML = state.componentes.map(c => {
                         let parts = [`<strong>[${c.tipo.toUpperCase()}]</strong>`];
                         if (c.codigoKitComp) parts.push(`${c.codigoKitComp}:`);
@@ -1101,6 +1110,8 @@ function flashFrame() {
                 dom.formularioComponente.style.display = "none";
                 // limpiar autosave
                 localStorage.removeItem(LS_KEY);
+                // Cargar el nuevo código KIT para la siguiente sesión
+                getNewKitCode(); 
             }
 
             function enviarFormulario() {
@@ -1138,7 +1149,62 @@ function flashFrame() {
              * QUAGGA + mejoras lector + toggles
              **********************/
             
-            // === NUEVO: mostrar campos dinámicos por tipo de componente ===
+            // === NUEVA FUNCIÓN: Obtiene el siguiente Código KIT del Apps Script ===
+            async function getNewKitCode() {
+                showMessage("Obteniendo último Código KIT...", 'info');
+                try {
+                    // Usamos el mismo URL pero fetch sin body, que resulta en un método GET
+                    const response = await fetch(SHEET_URL, {
+                        method: 'GET',
+                        cache: 'no-cache'
+                    });
+                    
+                    if (!response.ok) {
+                        // Intentamos leer el error como texto si la respuesta no es 200 OK
+                         throw new Error(`Error HTTP: ${response.status} - No se pudo conectar con el script.`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.result === 'success' && data.nextKitCode) {
+                        const newCode = data.nextKitCode.trim().toUpperCase();
+                        dom.codigoKitUsuario.value = newCode;
+                        showMessage(`Código KIT asignado: ${newCode}`, 'success');
+                        
+                        // Reiniciar el contador de componentes para el nuevo KIT base
+                        state.contador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1 };
+                        
+                        // Si hay componentes restaurados (autosave), actualizar su código KIT
+                        if (state.componentes.length > 0) {
+                            // Si se restauró un formulario de un KIT viejo, actualizamos los códigos de componente
+                            state.componentes = state.componentes.map(c => {
+                                if (c.codigoKitComp && c.codigoKitComp !== "SIN-KIT") {
+                                    const type = c.tipo;
+                                    const count = state.contador[type];
+                                    // Generar nuevo código de componente basado en el nuevo KIT base
+                                    const newKitCompCode = `${newCode}-${type.toUpperCase()}-${String(count).padStart(4, '0')}`;
+                                    state.contador[type] = (state.contador[type] || 0) + 1;
+                                    c.codigoKitComp = newKitCompCode;
+                                }
+                                return c;
+                            });
+                            refreshComponentList();
+                        }
+
+                    } else {
+                        // El script devolvió un error (ej. Hoja no encontrada)
+                        throw new Error(data.message || "Respuesta del script para GET inválida. Usando 'KIT-0001'.");
+                    }
+                    
+                } catch (error) {
+                    console.error("Error al obtener nuevo código KIT:", error);
+                    showMessage(`Error: No se pudo obtener el nuevo Código KIT. ${error.message}. Usando 'KIT-0001' por defecto.`, 'error');
+                    // Usar valor por defecto si falla
+                    dom.codigoKitUsuario.value = "KIT-0001"; 
+                }
+            }
+            
+            // === ACTUALIZACIÓN: Lógica de campos dinámicos por tipo de componente ===
             function actualizarCamposPorTipo(tipo) {
                 // 1. Obtener referencias de grupos de campos
                 const anexoGroup = document.getElementById('anexo-group');
@@ -1151,7 +1217,6 @@ function flashFrame() {
 
                 // 2. Lógica de visibilidad según el tipo
                 const isCPUOrLaptop = ['cpu', 'laptop'].includes(tipo);
-                const isMonitorTecladoDocking = ['monitor', 'teclado', 'docking'].includes(tipo);
                 const isPeriferico = ['fotocopiadora', 'impresora', 'escaner'].includes(tipo);
                 const isAnexo = tipo === 'anexo';
 
@@ -1163,7 +1228,7 @@ function flashFrame() {
                 ipGroup.style.display = mostrarIP ? 'block' : 'none';
 
                 // ** Lógica Marguesi / Patrimonial / Marca / Modelo / N° Serie **
-                const mostrarCamposEstandar = !isAnexo;
+                const mostrarCamposEstandar = !isAnexo && tipo !== '';
                 marguesiGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
                 patrimonialGroup.style.display = mostrarCamposEstandar ? 'block' : 'none'; // Opcional pero visible
                 marcaGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
@@ -1361,6 +1426,10 @@ function flashFrame() {
                 dom.sede = document.getElementById("sede");
                 dom.dependencia = document.getElementById("dependencia");
                 
+                // --- NUEVO: Obtener el último código KIT del Apps Script ---
+                // Nota: Desactivado temporalmente a petición del usuario.
+                // getNewKitCode(); 
+
                 // Restaurar autosave primero
                 restoreAutosave();
 
