@@ -10,30 +10,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- QuaggaJS para lector de códigos de barras -->
+    <!-- NOTA: Esta versión (0.12.1) es la que has estado usando, la mantenemos por compatibilidad -->
     <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
     
     <script>
-    // === Mejoras de validación y animación ===
+    // === Mejoras de validación y animación (Sin cambios) ===
 
     // Limpiar invalid al corregir campo
     function clearInvalidOnInput(el) {
         if (!el) return;
-        // Usar 'change' para SELECT, 'input' para todo lo demás
         const eventType = (el.tagName === 'SELECT') ? 'change' : 'input';
         
         const clearHandler = () => {
             el.removeAttribute('aria-invalid');
             el.classList.remove('input-invalid');
             clearFieldError(el);
-            // Si el elemento es parte de un input-with-button, limpiar también el padre
             if (el.parentElement && el.parentElement.classList.contains('input-with-button')) {
                  el.parentElement.classList.remove('input-invalid');
             }
-            // Quitar este listener para que solo se ejecute una vez
             el.removeEventListener(eventType, clearHandler);
         };
         
-        // Añadir el listener que se auto-elimina
         el.addEventListener(eventType, clearHandler, { once: true });
     }
 
@@ -46,7 +43,6 @@
         setTimeout(() => { el.classList.remove('input-shake'); }, 600);
         try { el.focus({ preventScroll: true }); } catch(e){ el.focus(); }
         
-        // IMPORTANTE: Solo añadimos el listener de limpieza DESPUÉS de que el campo ha sido marcado como inválido.
         clearInvalidOnInput(el);
     }
 
@@ -65,10 +61,9 @@
         if (sibling) sibling.remove();
     }
 
-    // === Overlay mejorado ===
+    // === Overlay mejorado (Sin cambios) ===
     let lastActiveElementBeforeOverlay = null;
     function showOverlay(show = true, subText = '') {
-        // Asignación diferida del DOM del overlay
         const ov = document.getElementById('overlay');
         const progressBar = document.getElementById('progress-bar');
         const loaderSub = document.getElementById('loader-sub');
@@ -104,7 +99,6 @@
 
     function escOverlayHandler(e) {
         if (e.key === 'Escape') {
-            // Evitamos alert/confirm
             console.warn('Operación en curso, no se puede cancelar.');
         }
     }
@@ -362,10 +356,14 @@
                             <option value="fotocopiadora">Fotocopiadora</option>
                             <option value="impresora">Impresora Multifuncional</option>
                             <option value="escaner">Escáner</option>
-                            <!-- ANEXO ELIMINADO DE AQUÍ -->
+                            <!-- CAMPOS AÑADIDOS -->
+                            <option value="ups">UPS</option>
+                            <option value="camaraweb">Cámara Web</option>
+                            <option value="mouse">Mouse</option>
+                            <!-- FIN CAMPOS AÑADIDOS -->
                         </optgroup>
                     </select>
-                    </div>
+                </div>
 
                 <div class="card" id="formularioComponente" style="display:none;padding:12px;background:#f9f9f9;box-shadow:none;">
                     <div class="form-group" id="codigoKitCompContainer">
@@ -393,7 +391,9 @@
                         <input type="text" id="nro_serie" placeholder="Escribe el Número de Serie" />
                     </div>
 
+                    <!-- CONTENEDOR DE VIDEO PARA QUAGGA -->
                     <div id="video-container" style="display:none;">
+                        <!-- El canvas y el video se adjuntarán aquí por QuaggaJS -->
                         <div class="video-controls" aria-hidden="false">
                             <button id="switch-camera" class="small-btn" title="Cambiar cámara">↺</button>
                             <button id="toggle-torch" class="small-btn" title="Linterna">🔦</button>
@@ -401,6 +401,7 @@
                         <div class="scan-frame"></div>
                     </div>
                     <button id="retry-btn" class="btn-danger" style="display:none;" type="button">Volver a intentar escaneo</button>
+                    <!-- FIN CONTENEDOR DE VIDEO -->
                     
                     <div class="form-group" id="patrimonial-group" style="display:none;">
                         <label for="patrimonial">COD. PATRIMONIAL (Opcional):</label>
@@ -443,21 +444,22 @@
              <div class="loader-title">Enviando datos...</div>
              <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
              <div id="loader-sub" class="loader-sub">Conectando con servidor...</div>
-         </div>
+       </div>
     </div>
 
     <script>
         /*******************************************************************
          * App: Registro de Equipos - Versión ANTERIOR + ANEXO TRASLADADO
+         * v2: Funciones de escáner QuaggaJS implementadas.
          *******************************************************************/
 
         window.app = (function () {
             // URL de Google Apps Script 
             const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec";
 
-            // Estado interno (QUITADO contador anexo)
+            // Estado interno (AÑADIDOS contadores para ups, camaraweb, mouse)
             const state = {
-                contador: { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1 }, 
+                contador: { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1, ups: 1, camaraweb: 1, mouse: 1 }, 
                 componentes: [],
                 scanning: false,
                 activeInput: null,
@@ -466,7 +468,7 @@
                 lastScanTimestamp: 0
             };
 
-            // DOM refs (QUITADO anexoComp ref)
+            // DOM refs (Sin cambios)
             const dom = {
                 messageBox: document.getElementById('message-box'),
                 tipoCargo: document.getElementById('tipoCargo'),
@@ -537,7 +539,7 @@
             }
 
             /**********************
-             * AUTOSAVE (localStorage) - QUITADO anexoComp
+             * AUTOSAVE (localStorage) - (Sin cambios)
              **********************/
             const LS_KEY = 'registro_equipos_autosave_v1';
             const LS_PENDING_SUBMISSIONS = 'registro_equipos_pending_submissions_v1';
@@ -548,7 +550,6 @@
                      const tipoResponsableInput = document.getElementById('tipoResponsable');
                      const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
                      const ipInput = document.getElementById('ip');
-                     // anexoCompInput eliminado
                      const patrimonialInput = document.getElementById('patrimonial');
                      const marcaInput = document.getElementById('marca');
                      const modeloInput = document.getElementById('modelo');
@@ -571,7 +572,6 @@
                              usuarioFinalName: (usuarioFinalNameInput || {}).value || '',
                              // campos temporales de componente
                              ip: (ipInput || {}).value || '',
-                             // anexoComp eliminado
                              patrimonial: (patrimonialInput || {}).value || '',
                              marca: (marcaInput || {}).value || '',
                              modelo: (modeloInput || {}).value || '',
@@ -588,7 +588,7 @@
                  } catch (e) { console.warn('Autosave failed', e); }
             }
 
-            // Restaurar si existe - QUITADO anexoComp
+            // Restaurar si existe - (AÑADIDO defaultContador actualizado)
             function restoreAutosave() {
                  try {
                      const raw = localStorage.getItem(LS_KEY);
@@ -598,7 +598,6 @@
 
                      const f = payload.form || {};
                      // NO restaurar codigoKitUsuario aquí si ya se obtuvo del script
-                     // if (f.codigoKitUsuario) dom.codigoKitUsuario.value = f.codigoKitUsuario; 
                      if (f.estado && dom.estado) dom.estado.value = f.estado;
                      if (f.tecnicoResponsable && dom.tecnicoResponsable) dom.tecnicoResponsable.value = f.tecnicoResponsable;
                      if (f.sede && dom.sede) dom.sede.value = f.sede;
@@ -617,7 +616,7 @@
                          }
                          if (f.tipoResponsable) {
                              const el = document.getElementById('tipoResponsable');
-                              if (el) el.value = f.tipoResponsable;
+                             if (el) el.value = f.tipoResponsable;
                          }
                          if (f.usuarioFinalName) {
                             const el = document.getElementById('usuarioFinalName');
@@ -634,7 +633,6 @@
                                  const el = document.getElementById('ip');
                                  if (el) el.value = f.ip;
                              }
-                             // anexoComp eliminado
                              if (f.patrimonial) {
                                  const el = document.getElementById('patrimonial');
                                  if (el) el.value = f.patrimonial;
@@ -644,8 +642,8 @@
                                  if (el) el.value = f.marca;
                              }
                              if (f.modelo) {
-                                const el = document.getElementById('modelo');
-                                if (el) el.value = f.modelo;
+                                 const el = document.getElementById('modelo');
+                                 if (el) el.value = f.modelo;
                              }
                              if (f.marguesi) {
                                  const el = document.getElementById('marguesi');
@@ -661,7 +659,7 @@
                          // Restaurar lista de componentes y contadores
                          state.componentes = payload.componentes || [];
                          // Asegurar que contador tenga todas las claves esperadas
-                         const defaultContador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1 };
+                         const defaultContador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1, ups: 1, camaraweb: 1, mouse: 1 };
                          state.contador = { ...defaultContador, ...(payload.contador || {}) };
 
                          refreshComponentList();
@@ -671,7 +669,7 @@
                              // Solo mostrar si hay componentes o algún campo del form tenía valor
                              showMessage("Datos restaurados.", 'info');
                          }
-                     }, 80); // Aumentar un poco el timeout si los campos dinámicos tardan en aparecer
+                     }, 80);
 
                  } catch (e) { console.warn('Restore autosave failed', e); }
             }
@@ -713,7 +711,7 @@
                          if (successCount > 0) { // Solo mostrar si hubo éxito
                             showMessage("Envíos pendientes procesados.", 'success');
                          } else {
-                            // Si no había pendientes válidos o algo raro pasó
+                             // Si no había pendientes válidos o algo raro pasó
                              dom.messageBox.style.display = 'none'; // Ocultar mensaje de reintento
                          }
                      } else {
@@ -729,7 +727,7 @@
             });
 
             /**********************
-             * Validaciones (Anexo General es opcional, Anexo Componente eliminado)
+             * Validaciones (Sin cambios)
              **********************/
             function validateInfoFields() {
                 const nombreResponsableInput = document.getElementById('nombreResponsable');
@@ -743,10 +741,10 @@
                 for (const input of infoInputs) {
                      const value = (input.value || '').toString().trim();
                      if (value === '' || value === 'Seleccione...' || value === '-- Seleccionar --') {
-                          animateAndFocusInvalid(input);
-                          if (!firstInvalidElement) firstInvalidElement = input;
+                         animateAndFocusInvalid(input);
+                         if (!firstInvalidElement) firstInvalidElement = input;
                      } else {
-                        // Limpiar error visual si ya no es inválido (aunque clearInvalidOnInput lo hará al interactuar)
+                         // Limpiar error visual si ya no es inválido (aunque clearInvalidOnInput lo hará al interactuar)
                          input.removeAttribute('aria-invalid');
                          input.classList.remove('input-invalid');
                          clearFieldError(input);
@@ -804,18 +802,17 @@
 
                 const isValid = !firstInvalidElement && dynamicValid; // Asegurar que dinámicos también sean válidos
                 if (!isValid) { 
-                     // Mostrar mensaje solo si el error NO es del anexo (que es opcional)
-                     if (!firstInvalidElement || firstInvalidElement.id !== 'anexoKit'){
+                    // Mostrar mensaje solo si el error NO es del anexo (que es opcional)
+                    if (!firstInvalidElement || firstInvalidElement.id !== 'anexoKit'){
                         showMessage("Por favor, complete campos obligatorios (*).", 'error');
-                     }
+                    }
                 }
                 return isValid;
             }
             
-            // Validación específica de campos de componente (QUITADO caso 'anexo')
+            // Validación específica de campos de componente
              function validateComponentFields(tipo) {
                  const ip = document.getElementById('ip'); // Opcional
-                 // anexoCompInput eliminado
                  const marguesi = dom.marguesi; // Requerido
                  const nroSerie = dom.nro_serie; // Requerido
                  const marca = dom.marca; // Requerido
@@ -845,10 +842,17 @@
                  [marguesi, marca, modelo, nroSerie].filter(Boolean).forEach(el => {
                      if (!el.value.trim()) { // Si es requerido y está vacío
                          animateAndFocusInvalid(el);
+                         // Si es el marguesi, animar el contenedor
+                         if (el.id === 'marguesi' && el.parentElement.classList.contains('input-with-button')) {
+                            el.parentElement.classList.add('input-invalid');
+                         }
                      } else { // Si tiene valor (o no es requerido) limpiar visualmente
                          el.removeAttribute('aria-invalid');
                          el.classList.remove('input-invalid');
                          clearFieldError(el);
+                         if (el.id === 'marguesi' && el.parentElement.classList.contains('input-with-button')) {
+                            el.parentElement.classList.remove('input-invalid');
+                         }
                      }
                  });
 
@@ -867,7 +871,7 @@
 
 
             /**********************
-             * Envío a Google Sheets (Payload igual que antes, usa anexoKit)
+             * Envío a Google Sheets (Sin cambios)
              **********************/
             async function sendDataToSheet(data, options = { showOverlay: true, clearOnSuccess: true, attemptNetworkOnly: false }) {
                 const payload = {
@@ -884,36 +888,36 @@
                     components: data.components 
                 };
                  try {
-                    if (options.showOverlay) showOverlay(true, 'Enviando...'); 
-                    if (options.showOverlay) await simulateProgress(0.15);
-                    const response = await fetch(SHEET_URL, {
-                        method: 'POST',
-                        mode: 'no-cors', 
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    // NOTA: Con 'no-cors', la respuesta no es directamente usable,
-                    // asumimos éxito si no hay error de red.
-                    if (options.showOverlay) await simulateProgress(1.0);
-                    if (options.showOverlay) showOverlay(false);
-                    if (options.clearOnSuccess) {
-                        localStorage.removeItem(LS_KEY);
-                    }
-                    if (!options.attemptNetworkOnly) {
-                        showMessage("¡Envío exitoso!", 'success');
-                        resetForm();
-                    }
-                } catch (error) {
-                    if (options.showOverlay) showOverlay(false);
-                    console.error('Error al enviar:', error);
-                    if (!options.attemptNetworkOnly) {
-                        pushPendingSubmission(payload); 
-                        showMessage("Error de envío. Datos guardados localmente.", 'error');
-                    } else {
-                        showMessage(`Reintento falló para ${data.kitCode}.`, 'error');
-                        throw error; 
-                    }
-                }
+                     if (options.showOverlay) showOverlay(true, 'Enviando...'); 
+                     if (options.showOverlay) await simulateProgress(0.15);
+                     const response = await fetch(SHEET_URL, {
+                         method: 'POST',
+                         mode: 'no-cors', 
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(payload)
+                     });
+                     // NOTA: Con 'no-cors', la respuesta no es directamente usable,
+                     // asumimos éxito si no hay error de red.
+                     if (options.showOverlay) await simulateProgress(1.0);
+                     if (options.showOverlay) showOverlay(false);
+                     if (options.clearOnSuccess) {
+                         localStorage.removeItem(LS_KEY);
+                     }
+                     if (!options.attemptNetworkOnly) {
+                         showMessage("¡Envío exitoso!", 'success');
+                         resetForm();
+                     }
+                 } catch (error) {
+                     if (options.showOverlay) showOverlay(false);
+                     console.error('Error al enviar:', error);
+                     if (!options.attemptNetworkOnly) {
+                         pushPendingSubmission(payload); 
+                         showMessage("Error de envío. Datos guardados localmente.", 'error');
+                     } else {
+                         showMessage(`Reintento falló para ${data.kitCode}.`, 'error');
+                         throw error; 
+                     }
+                 }
             }
 
             function simulateProgress(target = 1.0) { 
@@ -926,57 +930,57 @@
             }
             
             /**********************
-             * Campos dinámicos de Responsable (Añadir asteriscos en labels)
+             * Campos dinámicos de Responsable (Sin cambios)
              **********************/
-             function mostrarCampos() {
-                 const tipo = (dom.tipoCargo.value || '').toString().trim().toUpperCase();
-                 const contenedor = dom.camposDinamicos;
-                 contenedor.innerHTML = ""; 
-                 if (!tipo) { updateLocalSummary(); return; }
+              function mostrarCampos() {
+                  const tipo = (dom.tipoCargo.value || '').toString().trim().toUpperCase();
+                  const contenedor = dom.camposDinamicos;
+                  contenedor.innerHTML = ""; 
+                  if (!tipo) { updateLocalSummary(); return; }
 
-                 // Añadir asteriscos a los labels aquí
-                 const bloqueResponsable = `
-                     <div class="form-group full-width-field" id="responsable-block">
-                         <label for="nombreResponsable">RESPONSABLE DEL CARGO:*</label> 
-                         <div class="responsable-group">
-                             <select id="tipoResponsable" required>
-                                 <option value="728">728</option>
-                                 <option value="276">276</option>
-                                 <option value="CAS">CAS</option>
-                             </select>
-                             <input type="text" id="nombreResponsable" placeholder="Nombre Asignado" required />
-                         </div>
-                     </div>`;
-                 const bloqueUsuarioFinal = `
-                     <div class="form-group full-width-field" id="usuario-final-block">
-                         <label for="usuarioFinalName">USUARIO FINAL DEL EQUIPO (TITULAR):*</label> 
-                         <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
-                     </div>`;
+                  // Añadir asteriscos a los labels aquí
+                  const bloqueResponsable = `
+                       <div class="form-group full-width-field" id="responsable-block">
+                           <label for="nombreResponsable">RESPONSABLE DEL CARGO:*</label> 
+                           <div class="responsable-group">
+                               <select id="tipoResponsable" required>
+                                   <option value="728">728</option>
+                                   <option value="276">276</option>
+                                   <option value="CAS">CAS</option>
+                               </select>
+                               <input type="text" id="nombreResponsable" placeholder="Nombre Asignado" required />
+                           </div>
+                       </div>`;
+                  const bloqueUsuarioFinal = `
+                       <div class="form-group full-width-field" id="usuario-final-block">
+                           <label for="usuarioFinalName">USUARIO FINAL DEL EQUIPO (TITULAR):*</label> 
+                           <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
+                       </div>`;
 
-                 const isUserFinalRequired = (tipo === "VOL" || tipo === "TER" || tipo === "SEC");
-                 let htmlContent = bloqueResponsable;
-                 if (isUserFinalRequired) { 
-                     htmlContent += bloqueUsuarioFinal; 
-                     contenedor.classList.add('stacked'); 
-                 } else {
-                     contenedor.classList.remove('stacked');
-                 }
-                 contenedor.innerHTML = htmlContent; 
+                  const isUserFinalRequired = (tipo === "VOL" || tipo === "TER" || tipo === "SEC");
+                  let htmlContent = bloqueResponsable;
+                  if (isUserFinalRequired) { 
+                      htmlContent += bloqueUsuarioFinal; 
+                      contenedor.classList.add('stacked'); 
+                  } else {
+                      contenedor.classList.remove('stacked');
+                  }
+                  contenedor.innerHTML = htmlContent; 
 
-                 // Listeners para autosave y summary (la validación se dispara al agregar/enviar)
-                 const nombreRespInput = document.getElementById('nombreResponsable');
-                 const usuarioFinalInput = document.getElementById('usuarioFinalName');
-                 const tipoRespSelect = document.getElementById('tipoResponsable');
+                  // Listeners para autosave y summary (la validación se dispara al agregar/enviar)
+                  const nombreRespInput = document.getElementById('nombreResponsable');
+                  const usuarioFinalInput = document.getElementById('usuarioFinalName');
+                  const tipoRespSelect = document.getElementById('tipoResponsable');
 
-                 if (nombreRespInput) nombreRespInput.addEventListener('input', () => { updateLocalSummary(); autosave(); });
-                 if (usuarioFinalInput) usuarioFinalInput.addEventListener('input', () => { updateLocalSummary(); autosave(); });
-                 if (tipoRespSelect) tipoRespSelect.addEventListener('change', () => { updateLocalSummary(); autosave(); });
+                  if (nombreRespInput) nombreRespInput.addEventListener('input', () => { updateLocalSummary(); autosave(); });
+                  if (usuarioFinalInput) usuarioFinalInput.addEventListener('input', () => { updateLocalSummary(); autosave(); });
+                  if (tipoRespSelect) tipoRespSelect.addEventListener('change', () => { updateLocalSummary(); autosave(); });
 
-                 updateLocalSummary();
-             }
+                  updateLocalSummary();
+              }
 
             /**********************
-             * Resumen local y UI de componentes (QUITADO anexoComp)
+             * Resumen local y UI de componentes (Sin cambios)
              **********************/
             function updateLocalSummary() { 
                 const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
@@ -1017,7 +1021,6 @@
                      const li = document.createElement('li');
                      let parts = [`[${c.tipo.toUpperCase()}]`];
                      if (c.codigoKitComp) parts.push(`${c.codigoKitComp}`);
-                     // anexoComp eliminado
                      if (c.ip) parts.push(`IP: ${c.ip}`);
                      if (c.patrimonial) parts.push(`Patrimonial: ${c.patrimonial}`);
                      if (c.marca) parts.push(`Marca: ${c.marca}`);
@@ -1030,7 +1033,7 @@
                  }
             }
             
-            // Mostrar formulario de componente (QUITADO limpieza anexoComp)
+            // Mostrar formulario de componente
             function mostrarFormulario(validateBefore = true) {
                 const tipoSeleccionado = dom.tipoComponente.value;
                 
@@ -1056,12 +1059,15 @@
                          return;
                      }
 
-                    const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking'].includes(tipo); 
+                    // (AÑADIDOS nuevos tipos a la lógica)
+                    const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking', 'ups', 'camaraweb', 'mouse'].includes(tipo); 
 
                     dom.codigoKitCompContainer.style.display = isKitCompRequired ? "block" : "none";
                     
                     if (isKitCompRequired) {
-                        const currentCount = state.contador[tipo] || 1;
+                        // Asegurarnos que el contador existe
+                        if (!state.contador[tipo]) state.contador[tipo] = 1; 
+                        const currentCount = state.contador[tipo];
                         const autogen = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(currentCount).padStart(4, '0')}`;
                         dom.codigoKitComp.value = autogen;
                     } else {
@@ -1070,7 +1076,6 @@
 
                     // Limpiar campos SIEMPRE al mostrar, excepto si es restauración (validateBefore=false)
                     if (validateBefore) { 
-                        // anexoComp eliminado
                         document.getElementById('ip') && (document.getElementById('ip').value = "");
                         document.getElementById('patrimonial') && (document.getElementById('patrimonial').value = "");
                         dom.marguesi.value = "";
@@ -1083,7 +1088,7 @@
                 }
             }
 
-            // Agregar componente (QUITADO lógica anexoComp)
+            // Agregar componente (AÑADIDOS nuevos tipos a la lógica)
             function agregarComponente() {
                  if (!validateInfoFields()) return; // Validar info general
                  const tipo = dom.tipoComponente.value;
@@ -1100,16 +1105,15 @@
                  const modelo = (dom.modelo.value || '').toUpperCase().trim();
                  const ip = (document.getElementById('ip') || {}).value || '';
                  const patrimonial = (document.getElementById('patrimonial') || {}).value || '';
-                 // anexoCompValue eliminado
 
                  let codigoKitComp = "SIN-KIT";
-                 const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking'].includes(tipo);
+                 const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking', 'ups', 'camaraweb', 'mouse'].includes(tipo);
                  if (isKitCompRequired) {
                      codigoKitComp = dom.codigoKitComp.value; // Ya se generó al mostrar
                      // Incrementar contador DESPUÉS de agregar
                  } 
                  
-                 // Componente final (QUITADO anexoComp)
+                 // Componente final
                  state.componentes.push({ 
                      tipo, 
                      marguesi: marguesi, 
@@ -1117,14 +1121,13 @@
                      marca: marca, 
                      modelo: modelo, 
                      codigoKitComp: isKitCompRequired ? codigoKitComp : null, 
-                     // anexoComp eliminado
                      ip: ip || null,
                      patrimonial: patrimonial || null
                  });
 
                  // Incrementar contador ahora
                  if (isKitCompRequired) {
-                    state.contador[tipo] = (state.contador[tipo] || 1) + 1;
+                     state.contador[tipo] = (state.contador[tipo] || 1) + 1;
                  }
                  
                  refreshComponentList();
@@ -1135,9 +1138,9 @@
                  autosave();
                  dom.tipoComponente.value = ""; // Resetear selector
                  mostrarFormulario(false); // Ocultar formulario sin validar
-             }
+            }
 
-            // Reset Form (QUITADO limpieza anexoComp y reset contador anexo)
+            // Reset Form (AÑADIDO defaultContador actualizado)
             function resetForm() {
                  const allInputs = document.querySelectorAll('input[type="text"]:not([readonly]), select');
                  allInputs.forEach(input => { 
@@ -1149,12 +1152,11 @@
                      clearFieldError(input);
                  });
                  dom.anexoKit && (dom.anexoKit.value = ''); // Limpiar anexo general
-                 // anexoComp eliminado
 
                  dom.listaComponentes.innerHTML = "";
                  state.componentes = [];
                  // Resetear contadores
-                 const defaultContador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1 };
+                 const defaultContador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1, ups: 1, camaraweb: 1, mouse: 1 };
                  state.contador = { ...defaultContador }; 
 
                  dom.tipoCargo.value = '';
@@ -1168,7 +1170,7 @@
                  getNewKitCode(); 
             }
 
-            // Enviar Formulario (Payload igual, usa anexoKit)
+            // Enviar Formulario (Sin cambios)
             function enviarFormulario() {
                  if (!validateInfoFields()) return; // Validar info general
                  if (state.componentes.length === 0) { 
@@ -1195,14 +1197,14 @@
                      responsableTipo: tipoResponsableInput ? tipoResponsableInput.value : "N/A",
                      responsableNombre: nombreResponsable,
                      usuarioFinal: nombreUsuarioFinal,
-                     components: state.componentes // Array de componentes (YA NO incluye anexoComp)
+                     components: state.componentes
                  };
 
                  sendDataToSheet(submissionData, { showOverlay: true, clearOnSuccess: true, attemptNetworkOnly: false });
             }
 
             /**********************
-             * QUAGGA + mejoras lector + toggles (igual que antes)
+             * Obtener nuevo KIT ID (Sin cambios)
              **********************/
             
             async function getNewKitCode() { 
@@ -1242,9 +1244,8 @@
                 }
             }
             
-            // Actualizar campos por tipo (QUITADO lógica anexoCompGroup)
+            // Actualizar campos por tipo (AÑADIDOS nuevos tipos a la lógica)
              function actualizarCamposPorTipo(tipo) {
-                 // anexoCompGroup eliminado
                  const ipGroup = document.getElementById('ip-group');
                  const marguesiGroup = document.getElementById('marguesi-group');
                  const patrimonialGroup = document.getElementById('patrimonial-group');
@@ -1252,11 +1253,9 @@
                  const modeloGroup = document.getElementById('modelo-group');
                  const nroSerieGroup = document.getElementById('nro_serie-group');
 
-                 // isAnexo eliminado
                  const isCPUOrLaptop = ['cpu', 'laptop'].includes(tipo);
-                 const isPeriferico = ['fotocopiadora', 'impresora', 'escaner'].includes(tipo);
-
-                 // Mostrar/ocultar input anexo componente eliminado
+                 // (AÑADIDOS nuevos tipos a la lógica)
+                 const isPeriferico = ['fotocopiadora', 'impresora', 'escaner', 'ups', 'camaraweb'].includes(tipo);
                  
                  const mostrarIP = isCPUOrLaptop || isPeriferico;
                  ipGroup.style.display = mostrarIP ? 'block' : 'none';
@@ -1269,26 +1268,233 @@
                  modeloGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
                  nroSerieGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
                  
-                 // Limpiar errores visualmente (QUITADO anexoComp)
+                 // Limpiar errores visualmente
                  [document.getElementById('ip'), dom.marguesi, document.getElementById('patrimonial'), dom.marca, dom.modelo, dom.nro_serie]
                      .filter(Boolean)
                      .forEach(el => {
                          el.removeAttribute('aria-invalid');
                          el.classList.remove('input-invalid');
                          clearFieldError(el);
+                         if (el.id === 'marguesi' && el.parentElement.classList.contains('input-with-button')) {
+                            el.parentElement.classList.remove('input-invalid');
+                         }
                      });
              }
 
-            function quaggaConfigForFacing(facingMode) { /* ... */ }
-            let quaggaInited = false;
-            function onQuaggaDetected(data) { /* ... */ }
-            function startScanning() { /* ... */ }
-            function stopScanning(showRetry = true) { /* ... */ }
-            function switchCamera() { /* ... */ }
-            async function toggleTorch() { /* ... */ }
+            // ***************************************************************
+            // * IMPLEMENTACIÓN DE QUAGGAJS (CÁMARA Y ESCÁNER)
+            // ***************************************************************
+
+            // --- 1. Configuración de Quagga ---
+            function quaggaConfigForFacing(facingMode) {
+                return {
+                    inputStream: {
+                        type: "LiveStream",
+                        target: dom.videoContainer,
+                        constraints: {
+                            width: { min: 640 },
+                            height: { min: 480 },
+                            facingMode: facingMode,
+                            aspectRatio: { min: 1, max: 2 }
+                        },
+                    },
+                    locator: {
+                        patchSize: "medium",
+                        halfSample: true,
+                    },
+                    decoder: {
+                        // Lista de códigos de barras a detectar. 'code_128' y 'ean' son comunes.
+                        readers: [
+                            "code_128_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_39_reader",
+                            "code_39_vin_reader",
+                            "codabar_reader",
+                            "upc_reader",
+                            "upc_e_reader"
+                        ],
+                        debug: {
+                            drawBoundingBox: true,
+                            showFrequency: true,
+                            drawScanline: true,
+                            showPattern: true
+                        }
+                    },
+                    locate: true, // Intentar localizar el código de barras
+                    numOfWorkers: navigator.hardwareConcurrency || 4, // Usar 4 workers o los núcleos disponibles
+                };
+            }
+            
+            // --- 2. Función de Detección (Callback) ---
+            function onQuaggaDetected(data) {
+                // 'Debounce' - Evitar múltiples detecciones del mismo código
+                const now = Date.now();
+                if (now - state.lastScanTimestamp < 1500) { // Cooldown de 1.5 segundos
+                    return;
+                }
+                
+                if (data && data.codeResult && data.codeResult.code) {
+                    state.lastScanTimestamp = now;
+                    console.log("Código detectado:", data.codeResult.code);
+
+                    beep(0.08, 900, 0.08); // Sonido de éxito
+                    flashFrame(); // Feedback visual
+
+                    if (state.activeInput) {
+                        state.activeInput.value = data.codeResult.code;
+                        // Disparar evento 'input' para que autosave() lo detecte
+                        state.activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+
+                    // Limpiar error visual si lo tenía
+                    if(state.activeInput && state.activeInput.parentElement.classList.contains('input-with-button')) {
+                        state.activeInput.parentElement.classList.remove('input-invalid');
+                    }
+
+                    stopScanning(false); // Detener escáner (false = no mostrar botón 'retry')
+                    showMessage("Código escaneado.", 'success');
+                }
+            }
+
+            // --- 3. Función de Procesamiento (Dibuja los cuadros en el canvas) ---
+            function onQuaggaProcessed(result) {
+                const drawingCtx = Quagga.canvas.ctx.overlay;
+                const drawingCanvas = Quagga.canvas.dom.overlay;
+
+                if (drawingCtx && drawingCanvas) {
+                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                    
+                    if (result) {
+                        // Dibuja los cuadros delimitadores
+                        if (result.boxes) {
+                            result.boxes.filter(box => box !== result.box).forEach(box => {
+                                Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                            });
+                        }
+                        // Dibuja el cuadro del código detectado
+                        if (result.box) {
+                            Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
+                        }
+                        // Dibuja la línea del código
+                        if (result.codeResult && result.codeResult.code) {
+                            Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+                        }
+                    }
+                }
+            }
+
+
+            // --- 4. Iniciar Escáner ---
+            function startScanning() {
+                if (state.scanning) return;
+                
+                // Verificar permisos de cámara (buena práctica)
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showMessage("Tu navegador no soporta el acceso a la cámara.", 'error');
+                    return;
+                }
+                
+                state.scanning = true;
+                dom.videoContainer.style.display = "block";
+                dom.retryBtn.style.display = "none";
+                dom.toggleTorchBtn.style.display = 'none'; // Ocultar hasta saber si está disponible
+
+                const config = quaggaConfigForFacing(state.currentFacingMode);
+
+                Quagga.init(config, async (err) => {
+                    if (err) {
+                        console.error("Error al iniciar Quagga:", err);
+                        showMessage(`Error de cámara: ${err.message}`, 'error');
+                        stopScanning(true); // Mostrar 'retry'
+                        return;
+                    }
+                    console.log("Quagga iniciado correctamente.");
+                    
+                    // Verificar capacidad de la linterna (torch)
+                    try {
+                        const capabilities = Quagga.CameraAccess.getActiveTrack().getCapabilities();
+                        if (capabilities && capabilities.torch) {
+                            state.torchAvailable = true;
+                            dom.toggleTorchBtn.style.display = 'inline-block';
+                        }
+                    } catch (e) {
+                        console.warn("No se pudo acceder a las capacidades de la linterna.", e);
+                        state.torchAvailable = false;
+                    }
+
+                    Quagga.start();
+                    
+                    // Registrar listeners
+                    Quagga.onDetected(onQuaggaDetected);
+                    Quagga.onProcessed(onQuaggaProcessed);
+                });
+            }
+
+            // --- 5. Detener Escáner ---
+            function stopScanning(showRetry = true) {
+                if (!state.scanning && !Quagga.CameraAccess.getActiveTrack()) return; // Ya está detenido
+                
+                console.log("Deteniendo escáner...");
+                state.scanning = false;
+                
+                try {
+                    Quagga.stop();
+                } catch(e) {
+                    console.warn("Error al detener Quagga (puede ser normal si no estaba iniciado):", e);
+                }
+                
+                // Quitar listeners
+                Quagga.offDetected(onQuaggaDetected);
+                Quagga.offProcessed(onQuaggaProcessed);
+
+                dom.videoContainer.style.display = "none";
+                dom.retryBtn.style.display = showRetry ? "block" : "none";
+                state.lastScanTimestamp = 0; // Resetear el cooldown
+            }
+
+            // --- 6. Cambiar Cámara ---
+            function switchCamera() {
+                if (state.scanning) {
+                    // Detener el stream actual antes de cambiar
+                    stopScanning(false);
+                    // Cambiar el modo
+                    state.currentFacingMode = (state.currentFacingMode === 'environment') ? 'user' : 'environment';
+                    // Reiniciar
+                    setTimeout(startScanning, 100); // Dar un respiro al navegador
+                }
+            }
+
+            // --- 7. Activar/Desactivar Linterna ---
+            async function toggleTorch() {
+                if (!state.torchAvailable || !state.scanning) return;
+
+                try {
+                    const track = Quagga.CameraAccess.getActiveTrack();
+                    const capabilities = track.getCapabilities();
+
+                    if (capabilities.torch) {
+                        // Obtener el estado actual (un poco complejo)
+                        const currentConstraints = track.getConstraints();
+                        const isTorchOn = !!(currentConstraints.advanced && currentConstraints.advanced.find(c => c.torch)?.torch);
+                        
+                        await track.applyConstraints({
+                            advanced: [{ torch: !isTorchOn }]
+                        });
+                        console.log("Linterna cambiada a:", !isTorchOn);
+                    }
+                } catch (err) {
+                    console.error('Error al cambiar la linterna:', err);
+                }
+            }
+
+            // ***************************************************************
+            // * FIN IMPLEMENTACIÓN QUAGGAJS
+            // ***************************************************************
+
 
             /**********************
-             * Inicialización y listeners (QUITADO anexoComp ref y listener)
+             * Inicialización y listeners (Sin cambios)
              **********************/
             function initApp() {
                 // Asignar refs principales
@@ -1297,12 +1503,11 @@
                 dom.dependencia = document.getElementById("dependencia");
                 dom.estado = document.getElementById("estado");
                 dom.anexoKit = document.getElementById("anexoKit"); // Ref anexo general
-                // anexoComp ref eliminado
                 
                 // 1. Obtener KIT ID (esto ahora también llama a restoreAutosave al final)
                 getNewKitCode(); 
                 
-                // Listeners (QUITADO listener anexoComp)
+                // Listeners
                 // Listener para Anexo General (validación y autosave)
                  dom.anexoKit.addEventListener('input', () => { 
                      autosave();
@@ -1339,7 +1544,6 @@
                          // Para IP y Anexo, solo autosave
                          input.addEventListener('input', autosave);
                      }
-                     // anexoComp listener eliminado
                  });
                  
                  // Listeners botones escáner, retry, cámara
@@ -1358,7 +1562,7 @@
                              }
                          });
                      } else if (input) {
-                        // Deshabilitar otros botones de escáner si existieran por error
+                         // Deshabilitar otros botones de escáner si existieran por error
                          btn.disabled = true; 
                      }
                  });
@@ -1372,27 +1576,23 @@
                  dom.switchCameraBtn && dom.switchCameraBtn.addEventListener('click', (e) => { e.preventDefault(); switchCamera(); }); 
                  dom.toggleTorchBtn && dom.toggleTorchBtn.addEventListener('click', (e) => { e.preventDefault(); toggleTorch(); }); 
                  
-                 // LINEA PROBLEMÁTICA ELIMINADA (accesibilidad táctil)
-
                  // Reintentar envíos pendientes si hay conexión al cargar
                  if (navigator.onLine) retryPendingSubmissions();
                  
                  // Autosave periódico
                  setInterval(autosave, 5000);
-             }
+            }
 
             // Ejecutar init al cargar el DOM
             document.addEventListener('DOMContentLoaded', initApp);
 
             // Exponer funciones públicas necesarias para el HTML
             return {
-                // initApp no necesita exponerse, se llama sola
                 mostrarFormulario: mostrarFormulario,
                 agregarComponente: agregarComponente,
                 enviarFormulario: enviarFormulario,
                 mostrarCampos: mostrarCampos,
-                stopScanning: stopScanning, // Puede ser útil si se quiere detener manualmente
-                // state no necesita exponerse generalmente
+                stopScanning: stopScanning, // Exponer para detener manualmente si es necesario
             };
         })();
     </script>
