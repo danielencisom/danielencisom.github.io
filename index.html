@@ -943,7 +943,7 @@
 
                   // Añadir asteriscos a los labels aquí
                   const bloqueResponsable = `
-                       <div class="form-group full-width-field" id="responsable-block">
+                        <div class="form-group full-width-field" id="responsable-block">
                            <label for="nombreResponsable">RESPONSABLE DEL CARGO:*</label> 
                            <div class="responsable-group">
                                <select id="tipoResponsable" required>
@@ -955,7 +955,7 @@
                            </div>
                        </div>`;
                   const bloqueUsuarioFinal = `
-                       <div class="form-group full-width-field" id="usuario-final-block">
+                        <div class="form-group full-width-field" id="usuario-final-block">
                            <label for="usuarioFinalName">USUARIO FINAL DEL EQUIPO (TITULAR):*</label> 
                            <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
                        </div>`;
@@ -1295,8 +1295,9 @@
                         type: "LiveStream",
                         target: dom.videoContainer,
                         constraints: {
-                            width: { min: 640 },
-                            height: { min: 480 },
+                            // CORRECCIÓN: Aumentar resolución para ayudar a Android/Xiaomi a enfocar mejor
+                            width: { min: 1280 },
+                            height: { min: 720 },
                             facingMode: facingMode,
                             aspectRatio: { min: 1, max: 2 }
                         },
@@ -1306,16 +1307,17 @@
                         halfSample: true,
                     },
                     decoder: {
-                        // Lista de códigos de barras a detectar. 'code_128' y 'ean' son comunes.
+                        // CORRECCIÓN: Reducir lectores para evitar falsos positivos
+                        // Se han comentado los lectores "peligrosos" para IT (EAN, UPC, VIN)
                         readers: [
-                            "code_128_reader",
-                            "ean_reader",
-                            "ean_8_reader",
-                            "code_39_reader",
-                            "code_39_vin_reader",
-                            "codabar_reader",
-                            "upc_reader",
-                            "upc_e_reader"
+                            "code_128_reader", // Estándar para etiquetas de activos
+                            // "ean_reader", // Descomentar si escaneas productos de supermercado
+                            // "ean_8_reader",
+                            "code_39_reader", // Otro estándar común en IT
+                            // "code_39_vin_reader", // CAUSA DE ERRORES: A menudo confunde códigos normales
+                            // "codabar_reader",
+                            // "upc_reader",
+                            // "upc_e_reader"
                         ],
                         debug: {
                             drawBoundingBox: true,
