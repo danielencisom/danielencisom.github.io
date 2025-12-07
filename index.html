@@ -1,874 +1,1407 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<meta name="theme-color" content="#1976D2" />
-<title>Registro de Equipos de Cómputo - PRO</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-<!-- QuaggaJS -->
-<script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
-<style>
-:root{
-    --primary-color:#1976D2;
-    --secondary-color:#4CAF50;
-    --danger-color:#D32F2F;
-    --background-light:#f4f6f9;
-    --surface-light:#ffffff;
-    --text-dark:#333;
-    --border-color:#ddd;
-    --invalid-color:#f44336;
-    --overlay-bg: rgba(0,0,0,0.45);
-}
-html,body{height:100%;margin:0;padding:0;background:var(--background-light);font-family:'Roboto',Arial,sans-serif;color:var(--text-dark);-webkit-overflow-scrolling:touch;}
-.outer{display:flex;justify-content:center;padding:18px;}
-.container{width:100%;max-width:980px;margin:0 auto;max-height:calc(100vh - 36px);overflow-y:auto;padding-bottom:24px;}
-h1{color:var(--primary-color);text-align:center;margin-bottom:18px;font-weight:700;}
-.card{background:var(--surface-light);padding:16px;border-radius:8px;margin-bottom:18px;box-shadow:0 4px 10px rgba(0,0,0,0.06);}
-.form-group{margin-bottom:12px;}
-label{display:block;margin-bottom:6px;font-weight:500;font-size:0.95em;}
-input[type="text"], select{padding:10px 12px;border:1px solid var(--border-color);border-radius:4px;width:100%;box-sizing:border-box;font-size:1em;transition:border-color .25s,box-shadow .25s;}
-input[type="text"]:focus, select:focus{border-color:var(--primary-color);outline:none;box-shadow:0 0 0 3px rgba(25,118,210,0.08);}
-.input-invalid{border-color:var(--invalid-color) !important;box-shadow:0 0 0 3px rgba(244,67,54,0.12) !important;}
-.input-with-button{display:flex;align-items:center;border:1px solid var(--border-color);border-radius:4px;overflow:hidden;}
-.input-with-button input{border:none;flex-grow:1;padding:10px 12px;font-size:1em;}
-.scan-btn{background-color:var(--primary-color);color:white;border:none;padding:10px 15px;cursor:pointer;font-size:1.1em;line-height:1;}
-.scan-btn:hover{background-color:#1565C0;}
-.btn-action{border:none;padding:12px 20px;margin-top:12px;border-radius:6px;cursor:pointer;font-size:1em;font-weight:500;width:100%;transition:background-color .2s;background-color:var(--secondary-color);color:var(--surface-light);}
-.btn-action:hover{background-color:#388E3C;}
-.btn-danger{background-color:var(--danger-color);color:var(--surface-light);width:100%;padding:10px;margin-top:10px;border:none;border-radius:4px;cursor:pointer;}
-.btn-danger:hover{background-color:#C62828;}
-#listaComponentes{list-style:none;padding:0;margin:0;}
-#listaComponentes li{background:#e3f2fd;margin-bottom:8px;padding:10px;border-left:5px solid var(--primary-color);border-radius:4px;font-size:0.95em;}
-#resumenKit{background:#e0f2f1;border-left:5px solid var(--secondary-color);}
-#video-container{margin-top:12px;position:relative;width:100%;height:300px;overflow:hidden;background:#000;border-radius:4px;}
-#video-container video,#video-container canvas{max-width:100%;width:100%;height:100%;display:block;object-fit:cover;position:absolute;top:0;left:0;}
-.dynamic-fields{display:grid;grid-template-columns:1fr;gap:12px;margin-top:4px;}
-.responsable-group{display:flex;gap:10px;}
-.responsable-group select{width:30%;flex-shrink:0;}
-.full-width-field{grid-column:1 / -1;}
-#message-box{display:none;padding:10px;border-radius:6px;margin-bottom:12px;font-weight:500;}
-.msg-error{background:#ffeeee;color:var(--danger-color);border-left:5px solid var(--danger-color);}
-.msg-success{background:#e8f5e9;color:var(--secondary-color);border-left:5px solid var(--secondary-color);}
-.msg-info{background:#e3f2fd;color:var(--primary-color);border-left:5px solid var(--primary-color);}
-@media (min-width:768px){.dynamic-fields{grid-template-columns:1fr 1fr}.dynamic-fields.stacked>.form-group{grid-column:1 / -1;}}
-@media (max-width:420px){.scan-btn{padding:12px 14px;font-size:1.15em}.btn-action{padding:14px;font-size:1.05em}}
-.overlay{position:fixed;left:0;right:0;top:0;bottom:0;background:var(--overlay-bg);display:flex;align-items:center;justify-content:center;z-index:9999;display:none;}
-.loader-card{width:90%;max-width:420px;background:#fff;padding:18px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.25);text-align:center;}
-.loader-title{font-weight:600;color:var(--primary-color);margin-bottom:12px;}
-.progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin:12px 0;}
-.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary-color),#63a4ff);transition:width 0.45s ease;}
-.loader-sub{text-transform:uppercase;font-size:0.85em;color:#666;margin-top:6px;}
-.video-controls{position:absolute;right:10px;top:10px;z-index:20;display:flex;gap:8px;align-items:center;}
-.small-btn{background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:8px;border-radius:8px;cursor:pointer;}
-.small-btn:hover{background:rgba(0,0,0,0.6);}
-@keyframes shake {0%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}100%{transform:translateX(0);}}
-.input-shake{animation:shake 520ms ease-in-out;}
-.input-invalid{border-color:var(--invalid-color) !important;box-shadow:0 0 0 4px rgba(244,67,54,0.12) !important;}
-.input-with-button.input-invalid{border-color:var(--invalid-color) !important;box-shadow:0 0 0 4px rgba(244,67,54,0.12) !important;}
-.overlay.show{display:flex;animation:overlayFade .28s ease forwards;}
-@keyframes overlayFade{from{opacity:0;}to{opacity:1;}}
-.progress-bar{transition:width 420ms cubic-bezier(0.2,0.9,0.2,1);}
-.field-error{color:var(--invalid-color);font-size:0.85em;margin-top:6px;display:block;font-weight:500;}
-.scan-frame{position:absolute;top:35%;left:20%;width:60%;height:30%;border:3px solid rgba(0,255,0,0.8);box-shadow:0 0 20px rgba(0,255,0,0.4);z-index:10;pointer-events:none;border-radius:8px;transition:all 0.4s ease;}
-</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="theme-color" content="#1976D2" />
+    <title>Registro de Equipos de Cómputo</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- QuaggaJS para lector de códigos de barras -->
+    <!-- NOTA: Esta versión (0.12.1) es la que has estado usando, la mantenemos por compatibilidad -->
+    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+    
+    <script>
+    // === Mejoras de validación y animación (Sin cambios) ===
+
+    // Limpiar invalid al corregir campo
+    function clearInvalidOnInput(el) {
+        if (!el) return;
+        const eventType = (el.tagName === 'SELECT') ? 'change' : 'input';
+        
+        const clearHandler = () => {
+            el.removeAttribute('aria-invalid');
+            el.classList.remove('input-invalid');
+            clearFieldError(el);
+            if (el.parentElement && el.parentElement.classList.contains('input-with-button')) {
+                 el.parentElement.classList.remove('input-invalid');
+            }
+            el.removeEventListener(eventType, clearHandler);
+        };
+        
+        el.addEventListener(eventType, clearHandler, { once: true });
+    }
+
+    // Animar, centrar y ATACAR el listener de limpieza
+    function animateAndFocusInvalid(el) {
+        if (!el) return;
+        el.setAttribute('aria-invalid', 'true');
+        el.classList.add('input-invalid','input-shake');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { el.classList.remove('input-shake'); }, 600);
+        try { el.focus({ preventScroll: true }); } catch(e){ el.focus(); }
+        
+        clearInvalidOnInput(el);
+    }
+
+    // Mostrar mensaje de error inline
+    function showFieldError(el, msg) {
+        let sibling = el.parentElement.querySelector('.field-error');
+        if (!sibling) {
+            sibling = document.createElement('span');
+            sibling.className = 'field-error';
+            el.parentElement.appendChild(sibling);
+        }
+        sibling.textContent = msg;
+    }
+    function clearFieldError(el) {
+        const sibling = el.parentElement.querySelector('.field-error');
+        if (sibling) sibling.remove();
+    }
+
+    // === Overlay mejorado (Sin cambios) ===
+    let lastActiveElementBeforeOverlay = null;
+    function showOverlay(show = true, subText = '') {
+        const ov = document.getElementById('overlay');
+        const progressBar = document.getElementById('progress-bar');
+        const loaderSub = document.getElementById('loader-sub');
+        if (!ov || !progressBar || !loaderSub) return;
+
+        if (show) {
+            lastActiveElementBeforeOverlay = document.activeElement;
+            ov.classList.add('show');
+            ov.setAttribute('aria-hidden', 'false');
+            ov.setAttribute('aria-busy', 'true');
+            progressBar.style.width = '6%';
+            loaderSub.textContent = subText || 'Procesando...';
+            document.querySelectorAll('button, input, select').forEach(el => {
+                if (!ov.contains(el)) {
+                    el.dataset._wasDisabled = el.disabled ? '1' : '0';
+                    el.disabled = true;
+                }
+            });
+            document.addEventListener('keydown', escOverlayHandler);
+        } else {
+            ov.classList.remove('show');
+            ov.setAttribute('aria-hidden', 'true');
+            ov.setAttribute('aria-busy', 'false');
+            progressBar.style.width = '0%';
+            document.querySelectorAll('[data-_wasDisabled]').forEach(el => {
+                el.disabled = el.dataset._wasDisabled === '1';
+                delete el.dataset._wasDisabled;
+            });
+            document.removeEventListener('keydown', escOverlayHandler);
+            try { lastActiveElementBeforeOverlay && lastActiveElementBeforeOverlay.focus(); } catch(e){}
+        }
+    }
+
+    function escOverlayHandler(e) {
+        if (e.key === 'Escape') {
+            console.warn('Operación en curso, no se puede cancelar.');
+        }
+    }
+
+    // Feedback visual al detectar correctamente
+    function flashFrame() {
+        const frame = document.querySelector('.scan-frame');
+        if (!frame) return; // Si no hay marco, salir
+        frame.style.borderColor = 'lime';
+        frame.style.boxShadow = '0 0 25px lime';
+        setTimeout(() => {
+            frame.style.borderColor = 'rgba(0,255,0,0.8)';
+            frame.style.boxShadow = '0 0 20px rgba(0,255,0,0.4)';
+        }, 600);
+    }
+    </script>
+
+    <style>
+        :root{
+            --primary-color:#1976D2;
+            --secondary-color:#4CAF50;
+            --danger-color:#D32F2F;
+            --background-light:#f4f6f9;
+            --surface-light:#ffffff;
+            --text-dark:#333;
+            --border-color:#ddd;
+            --invalid-color:#f44336;
+            --overlay-bg: rgba(0,0,0,0.45);
+        }
+        html,body{height:100%;margin:0;padding:0;background:var(--background-light);font-family:'Roboto',Arial,sans-serif;color:var(--text-dark);-webkit-overflow-scrolling:touch;}
+        .outer{display:flex;justify-content:center;padding:18px;}
+        .container{width:100%;max-width:980px;margin:0 auto;max-height:calc(100vh - 36px);overflow-y:auto;padding-bottom:24px;}
+        h1{color:var(--primary-color);text-align:center;margin-bottom:18px;font-weight:700;}
+        h2,h3{color:var(--primary-color);margin-top:18px;border-bottom:2px solid var(--primary-color);padding-bottom:6px;font-weight:500;}
+        .card{background:var(--surface-light);padding:16px;border-radius:8px;margin-bottom:18px;box-shadow:0 4px 10px rgba(0,0,0,0.06);}
+        .form-group{margin-bottom:12px;}
+        label{display:block;margin-bottom:6px;font-weight:500;font-size:0.95em;}
+        input[type="text"], select{padding:10px 12px;border:1px solid var(--border-color);border-radius:4px;width:100%;box-sizing:border-box;font-size:1em;transition:border-color .25s,box-shadow .25s;}
+        input[type="text"]:focus, select:focus{border-color:var(--primary-color);outline:none;box-shadow:0 0 0 3px rgba(25,118,210,0.08);}
+        .input-invalid{border-color:var(--invalid-color) !important;box-shadow:0 0 0 3px rgba(244,67,54,0.12) !important;}
+        input[readonly]{background:#eee;color:#555;cursor:default;}
+        .input-with-button{display:flex;align-items:center;border:1px solid var(--border-color);border-radius:4px;overflow:hidden;}
+        .input-with-button input{border:none;flex-grow:1;padding:10px 12px;font-size:1em;}
+        .scan-btn{background-color:var(--primary-color);color:white;border:none;padding:10px 15px;cursor:pointer;font-size:1.1em;line-height:1;}
+        .scan-btn:hover{background-color:#1565C0;}
+        .camera-switch{background:transparent;border:none;color:white;padding:6px;border-radius:6px;cursor:pointer;margin-left:8px;}
+        .btn-action{border:none;padding:12px 20px;margin-top:12px;border-radius:6px;cursor:pointer;font-size:1em;font-weight:500;width:100%;transition:background-color .2s;background-color:var(--secondary-color);color:var(--surface-light);}
+        .btn-action:hover{background-color:#388E3C;}
+        .btn-danger{background-color:var(--danger-color);color:var(--surface-light);width:100%;padding:10px;margin-top:10px;border:none;border-radius:4px;cursor:pointer;}
+        .btn-danger:hover{background-color:#C62828;}
+        #listaComponentes{list-style:none;padding:0;margin:0;}
+        #listaComponentes li{background:#e3f2fd;margin-bottom:8px;padding:10px;border-left:5px solid var(--primary-color);border-radius:4px;font-size:0.95em;}
+        #resumenKit{background:#e0f2f1;border-left:5px solid var(--secondary-color);}
+        
+        /* FIX: Asegura que el contenedor de video tenga una altura fija en móvil */
+        #video-container{margin-top:12px;position:relative;width:100%;height:300px;overflow:hidden;background:#000;border-radius:4px;}
+        
+        /* FIX: Esto hace que el video/canvas cubra el área sin bordes negros, permitiendo recorte si el aspecto no coincide */
+        #video-container video,#video-container canvas{
+            max-width:100%;
+            width:100%;
+            height:100%; 
+            display:block;
+            object-fit:cover; /* CRÍTICO: Asegura que el stream cubre toda el área */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .dynamic-fields{display:grid;grid-template-columns:1fr;gap:12px;margin-top:4px;}
+        .responsable-group{display:flex;gap:10px;}
+        .responsable-group select{width:30%;flex-shrink:0;}
+        .full-width-field{grid-column:1 / -1;}
+        #message-box{display:none;padding:10px;border-radius:6px;margin-bottom:12px;font-weight:500;}
+        .msg-error{background:#ffeeee;color:var(--danger-color);border-left:5px solid var(--danger-color);}
+        .msg-success{background:#e8f5e9;color:var(--secondary-color);border-left:5px solid var(--secondary-color);}
+        .msg-info{background:#e3f2fd;color:var(--primary-color);border-left:5px solid var(--primary-color);}
+        @media (min-width:768px){.dynamic-fields{grid-template-columns:1fr 1fr}.dynamic-fields.stacked>.form-group{grid-column:1 / -1;}}
+        @media (max-width:420px){.scan-btn{padding:12px 14px;font-size:1.15em}.btn-action{padding:14px;font-size:1.05em}}
+
+        /* Overlay loader */
+        .overlay{position:fixed;left:0;right:0;top:0;bottom:0;background:var(--overlay-bg);display:flex;align-items:center;justify-content:center;z-index:9999;display:none;}
+        .loader-card{width:90%;max-width:420px;background:#fff;padding:18px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.25);text-align:center;}
+        .loader-title{font-weight:600;color:var(--primary-color);margin-bottom:12px;}
+        .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin:12px 0;}
+        .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary-color),#63a4ff);transition:width 0.45s ease;}
+        .loader-sub{text-transform:uppercase;font-size:0.85em;color:#666;margin-top:6px;}
+
+        /* small control over video overlay */
+        .video-controls{position:absolute;right:10px;top:10px;z-index:20;display:flex;gap:8px;align-items:center;}
+        .small-btn{background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:8px;border-radius:8px;cursor:pointer;}
+        .small-btn:hover{background:rgba(0,0,0,0.6);}
+        
+    /* === Mejoras de animación y validación (color rojo) === */
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+        100% { transform: translateX(0); }
+    }
+    .input-shake { animation: shake 520ms ease-in-out; }
+
+    .input-invalid {
+        border-color: var(--invalid-color) !important;
+        box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
+    }
+    /* Estilo para el padre .input-with-button cuando es inválido */
+    .input-with-button.input-invalid {
+        border-color: var(--invalid-color) !important;
+        box-shadow: 0 0 0 4px rgba(244,67,54,0.12) !important;
+    }
+
+    .overlay.show { display:flex; animation: overlayFade .28s ease forwards; }
+    @keyframes overlayFade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .progress-bar { transition: width 420ms cubic-bezier(0.2,0.9,0.2,1); }
+
+    .field-error {
+        color: var(--invalid-color);
+        font-size: 0.85em;
+        margin-top: 6px;
+        display: block;
+        font-weight: 500; /* Asegurar que el mensaje de error resalte */
+    }
+
+    /* === Marco guía de escaneo de códigos (AJUSTADO) === */
+    .scan-frame {
+        position: absolute;
+        /* Ajuste: Más centrado verticalmente */
+        top: 35%; 
+        /* Ajuste: Más estrecho horizontalmente */
+        left: 20%;
+        width: 60%;
+        /* Ajuste: Más bajo verticalmente */
+        height: 30%; 
+        border: 3px solid rgba(0, 255, 0, 0.8);
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+        z-index: 10;
+        pointer-events: none;
+        border-radius: 8px;
+        transition: all 0.4s ease;
+    }
+    </style>
 </head>
 <body>
-<div class="outer">
-  <div class="container" role="main">
-    <h1>REGISTRO DE EQUIPOS DE CÓMPUTO</h1>
-    <div id="message-box" class="card" aria-live="polite"></div>
+    <div class="outer">
+        <div class="container" role="main">
+            <h1>REGISTRO DE EQUIPOS DE CÓMPUTO</h1>
 
-    <div class="card">
-      <h2>Información General del KIT y Ubicación</h2>
-      <div class="form-group">
-        <label for="codigoKitUsuario">Código del KIT:</label>
-        <input type="text" id="codigoKitUsuario" value="KIT-0001" readonly />
-      </div>
+            <div id="message-box" class="card" aria-live="polite"></div>
 
-      <div class="form-group">
-        <label for="estado">📌 Estado del Equipo:*</label>
-        <select id="estado" required>
-          <option value="">Seleccione...</option>
-          <option value="Operativo">Operativo</option>
-          <option value="De Baja">De Baja</option>
-          <option value="Pendiente">Pendiente</option>
-        </select>
-      </div>
+            <div class="card">
+                <h2>Información General del KIT y Ubicación</h2>
+                <div class="form-group">
+                    <label for="codigoKitUsuario">Código del KIT:</label>
+                    <input type="text" id="codigoKitUsuario" value="KIT-0001" readonly />
+                </div>
+                <!-- NUEVO CAMPO: ESTADO -->
+                <div class="form-group">
+                    <label for="estado">📌 Estado del Equipo:*</label> <!-- ASTERISCO AÑADIDO -->
+                    <select id="estado" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Operativo">Operativo</option>
+                        <option value="De Baja">De Baja</option>
+                        <option value="Pendiente">Pendiente</option>
+                    </select>
+                </div>
+                <!-- FIN NUEVO CAMPO -->
+                <div class="form-group">
+                    <label for="tecnicoResponsable">Técnico Responsable:*</label> <!-- ASTERISCO AÑADIDO -->
+                    <select id="tecnicoResponsable" required>
+                        <option value="">Seleccione...</option>
+                        <option value="CH">CARLOS HUACHO</option>
+                        <option value="JI">JOSUE IBAÑEZ</option>
+                        <option value="DE">DANIEL ENCISO</option>
+                        <option value="OO">ODAR OLAYA</option>
+                        <option value="JL">JOSE LUYO</option>
+                        <option value="SC">SANTIAGO CARPIO</option>
+                        <option value="DC">DAVID COTERA</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sede">Sede:*</label> <!-- ASTERISCO AÑADIDO -->
+                    <select id="sede" required>
+                        <option value="">Seleccione...</option>
+                        <option value="SS12">SEDE SAENZ PEÑA 120</option>
+                        <option value="SS17">SEDE SAENZ PEÑA 175-177-181</option>
+                        <option value="SS15">SEDE SAENZ PEÑA 155-157</option>
+                        <option value="SS18">SEDE KING 1</option>
+                        <option value="SS19">SEDE KING 2</option>
+                        <option value="SS20">SEDE GRAU</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dependencia">Dependencia:*</label> <!-- ASTERISCO AÑADIDO -->
+                    <select id="dependencia" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="Lima">Lima</option>
+                        <option value="Callao">Callao</option>
+                        <option value="Cusco">Cusco</option>
+                    </select>
+                </div>
+                
+                <!-- CAMPO ANEXO ELIMINADO DE AQUÍ -->
 
-      <div class="form-group">
-        <label for="tecnicoResponsable">Técnico Responsable:*</label>
-        <select id="tecnicoResponsable" required>
-          <option value="">Seleccione...</option>
-          <option value="CH">CARLOS HUACHO</option>
-          <option value="JI">JOSUE IBAÑEZ</option>
-          <option value="DE">DANIEL ENCISO</option>
-          <option value="OO">ODAR OLAYA</option>
-          <option value="JL">JOSE LUYO</option>
-          <option value="SC">SANTIAGO CARPIO</option>
-          <option value="DC">DAVID COTERA</option>
-        </select>
-      </div>
+            </div>
 
-      <div class="form-group">
-        <label for="sede">Sede:*</label>
-        <select id="sede" required>
-          <option value="">Seleccione...</option>
-          <option value="SS12">SEDE SAENZ PEÑA 120</option>
-          <option value="SS17">SEDE SAENZ PEÑA 175-177-181</option>
-          <option value="SS15">SEDE SAENZ PEÑA 155-157</option>
-          <option value="SS18">SEDE KING 1</option>
-          <option value="SS19">SEDE KING 2</option>
-          <option value="SS20">SEDE GRAU</option>
-        </select>
-      </div>
+            <div class="card">
+                <h2>Información de Usuario Responsable de KIT</h2>
+                <div class="form-group">
+                    <label for="tipoCargo">TIPO DE CARGO:*</label> <!-- ASTERISCO AÑADIDO -->
+                    <select id="tipoCargo" onchange="window.app.mostrarCampos()" required>
+                        <option value="">Seleccione...</option>
+                        <option value="ASD">ASISTENTE ADMINISTRATIVO</option>
+                        <option value="AFF">ASISTENTE FUNCION FISCAL</option>
+                        <option value="AUD">AUXILIAR ADMINISTRATIVO</option>
+                        <option value="COOR">COORDINADOR</option>
+                        <option value="EA">ESPECIALISTA ADMINISTRATIVO</option>
+                        <option value="FAF">FISCAL ADJUNTO FISCAL</option>
+                        <option value="OAD">OPERADOR ADMINISTRATIVO</option>
+                        <option value="PRO">PROGRAMADOR</option>
+                        <option value="SEC">SECIGRISTA</option>
+                        <option value="TAD">TECNICO ADMINISTRATIVO</option>
+                        <option value="TER">TERCERO</option>
+                        <option value="VOL">VOLUNTARIO</option>
+                    </select>
+                </div>
+                <div id="camposDinamicos" class="dynamic-fields">
+                    <!-- Los campos dinámicos se insertarán aquí, con asteriscos añadidos por JS -->
+                </div>
 
-      <div class="form-group">
-        <label for="dependencia">Dependencia:*</label>
-        <select id="dependencia" required>
-          <option value="">-- Seleccionar --</option>
-          <option value="Lima">Lima</option>
-          <option value="Callao">Callao</option>
-          <option value="Cusco">Cusco</option>
-        </select>
-      </div>
+                <!-- CAMPO ANEXO TRASLADADO AQUÍ (NO OBLIGATORIO) -->
+                <div class="form-group" id="anexo-group">
+                    <label for="anexoKit">N° de Anexo (Teléfono - Solo 5 números):</label>
+                    <input type="text" id="anexoKit" placeholder="Escriba el N° de Anexo (e.g., 12345)" pattern="\d{5}" maxlength="5" />
+                </div>
+                <!-- FIN CAMPO ANEXO -->
+
+            </div>
+
+            <div class="card">
+                <h2>Registro de Componentes</h2>
+                <div class="form-group">
+                    <label for="tipoComponente">Seleccionar Componente:*</label> <!-- ASTERISCO AÑADIDO -->
+                    <select id="tipoComponente" onchange="window.app.mostrarFormulario()">
+                        <option value="">-- Seleccionar --</option>
+                        <option value="cpu">CPU</option>
+                        <option value="laptop">Laptop</option>
+                        <option value="monitor">Monitor</option>
+                        <option value="teclado">Teclado</option>
+                        <option value="docking">Docking</option>
+                        <optgroup label="Periféricos">
+                            <option value="fotocopiadora">Fotocopiadora</option>
+                            <option value="impresora">Impresora Multifuncional</option>
+                            <option value="escaner">Escáner</option>
+                            <!-- CAMPOS AÑADIDOS -->
+                            <option value="ups">UPS</option>
+                            <option value="camaraweb">Cámara Web</option>
+                            <option value="mouse">Mouse</option>
+                            <!-- FIN CAMPOS AÑADIDOS -->
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="card" id="formularioComponente" style="display:none;padding:12px;background:#f9f9f9;box-shadow:none;">
+                    <div class="form-group" id="codigoKitCompContainer">
+                        <label for="codigoKitComp">Código del KIT del Componente:</label>
+                        <input type="text" id="codigoKitComp" readonly />
+                    </div>
+                    
+                    <!-- CAMPO ANEXO (INPUT) ELIMINADO DE AQUÍ -->
+
+                    <div class="form-group" id="ip-group" style="display:none;">
+                        <label for="ip">Dirección IP:</label>
+                        <input type="text" id="ip" placeholder="Dirección IP (e.g., 192.168.1.100)" />
+                    </div>
+
+                    <div class="form-group" id="marguesi-group" style="display:none;">
+                        <label>📌 COD. MARGUESI:*</label> <!-- ASTERISCO AÑADIDO -->
+                        <div class="input-with-button">
+                            <input id="marguesi" type="text" class="scanable" placeholder="Escanea o escribe el código de barras" autocomplete="off" />
+                            <button class="scan-btn" data-input-id="marguesi" type="button">📷</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="nro_serie-group" style="display:none;">
+                        <label for="nro_serie">📌 N° SERIE:*</label> <!-- ASTERISCO AÑADIDO -->
+                        <input type="text" id="nro_serie" placeholder="Escribe el Número de Serie" />
+                    </div>
+
+                    <!-- CONTENEDOR DE VIDEO PARA QUAGGA -->
+                    <div id="video-container" style="display:none;">
+                        <!-- El canvas y el video se adjuntarán aquí por QuaggaJS -->
+                        <div class="video-controls" aria-hidden="false">
+                            <button id="switch-camera" class="small-btn" title="Cambiar cámara">↺</button>
+                            <button id="toggle-torch" class="small-btn" title="Linterna">🔦</button>
+                        </div>
+                        <div class="scan-frame"></div>
+                    </div>
+                    <button id="retry-btn" class="btn-danger" style="display:none;" type="button">Volver a intentar escaneo</button>
+                    <!-- FIN CONTENEDOR DE VIDEO -->
+                    
+                    <div class="form-group" id="patrimonial-group" style="display:none;">
+                        <label for="patrimonial">COD. PATRIMONIAL (Opcional):</label>
+                        <input type="text" id="patrimonial" placeholder="Código Patrimonial" />
+                    </div>
+
+                    <div class="form-group" id="marca-group" style="display:none;">
+                        <label for="marca">📌 Marca:*</label> <!-- ASTERISCO AÑADIDO -->
+                        <input type="text" id="marca" placeholder="Marca del componente" />
+                    </div>
+
+                    <div class="form-group" id="modelo-group" style="display:none;">
+                        <label for="modelo">📌 Modelo:*</label> <!-- ASTERISCO AÑADIDO -->
+                        <input type="text" id="modelo" placeholder="Modelo del componente" />
+                    </div>
+                    
+                    <button class="btn-action" onclick="window.app.agregarComponente()" type="button">Agregar Componente</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Componentes añadidos al KIT</h3>
+                <ul id="listaComponentes"></ul>
+            </div>
+
+            <div class="card" id="resumenKit" style="display:none;">
+                 <h3>Resumen del KIT</h3>
+                 <p><strong>KIT y Titular:</strong> <span id="kitFinal"></span></p>
+                 <h4>Componentes Registrados:</h4>
+                 <ul id="componentesResumenLista" style="list-style-type:none;padding-left:0;"></ul>
+            </div>
+
+            <button class="btn-action" onclick="window.app.enviarFormulario()" style="margin-bottom:26px;" type="button">Enviar KIT a Registro</button>
+        </div>
     </div>
 
-    <div class="card">
-      <h2>Información de Usuario Responsable de KIT</h2>
-      <div class="form-group">
-        <label for="tipoCargo">TIPO DE CARGO:*</label>
-        <select id="tipoCargo" required>
-          <option value="">Seleccione...</option>
-          <option value="ASD">ASISTENTE ADMINISTRATIVO</option>
-          <option value="AFF">ASISTENTE FUNCION FISCAL</option>
-          <option value="AUD">AUXILIAR ADMINISTRATIVO</option>
-          <option value="COOR">COORDINADOR</option>
-          <option value="EA">ESPECIALISTA ADMINISTRATIVO</option>
-          <option value="FAF">FISCAL ADJUNTO FISCAL</option>
-          <option value="OAD">OPERADOR ADMINISTRATIVO</option>
-          <option value="PRO">PROGRAMADOR</option>
-          <option value="SEC">SECIGRISTA</option>
-          <option value="TAD">TECNICO ADMINISTRATIVO</option>
-          <option value="TER">TERCERO</option>
-          <option value="VOL">VOLUNTARIO</option>
-        </select>
-      </div>
-      <div id="camposDinamicos" class="dynamic-fields"></div>
-      <div class="form-group" id="anexo-group">
-        <label for="anexoKit">N° de Anexo (Teléfono - Solo 5 números):</label>
-        <input type="text" id="anexoKit" placeholder="Escriba el N° de Anexo (e.g., 12345)" pattern="\d{5}" maxlength="5" />
-      </div>
+    <!-- Overlay/Loader global -->
+    <div id="overlay" class="overlay" aria-hidden="true">
+        <div class="loader-card" role="status" aria-live="polite">
+             <div class="loader-title">Enviando datos...</div>
+             <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+             <div id="loader-sub" class="loader-sub">Conectando con servidor...</div>
+       </div>
     </div>
 
-    <div class="card">
-      <h2>Registro de Componentes</h2>
-      <div class="form-group">
-        <label for="tipoComponente">Seleccionar Componente:*</label>
-        <select id="tipoComponente">
-          <option value="">-- Seleccionar --</option>
-          <option value="cpu">CPU</option>
-          <option value="laptop">Laptop</option>
-          <option value="monitor">Monitor</option>
-          <option value="teclado">Teclado</option>
-          <option value="docking">Docking</option>
-          <optgroup label="Periféricos">
-            <option value="fotocopiadora">Fotocopiadora</option>
-            <option value="impresora">Impresora Multifuncional</option>
-            <option value="escaner">Escáner</option>
-            <option value="ups">UPS</option>
-            <option value="camaraweb">Cámara Web</option>
-            <option value="mouse">Mouse</option>
-          </optgroup>
-        </select>
-      </div>
+    <script>
+        /*******************************************************************
+         * App: Registro de Equipos - Versión ANTERIOR + ANEXO TRASLADADO
+         * v2: Funciones de escáner QuaggaJS implementadas.
+         *******************************************************************/
 
-      <div class="card" id="formularioComponente" style="display:none;padding:12px;background:#f9f9f9;box-shadow:none;">
-        <div class="form-group" id="codigoKitCompContainer">
-          <label for="codigoKitComp">Código del KIT del Componente:</label>
-          <input type="text" id="codigoKitComp" readonly />
-        </div>
+        window.app = (function () {
+            // URL de Google Apps Script 
+            const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec";
 
-        <div class="form-group" id="ip-group" style="display:none;">
-          <label for="ip">Dirección IP:</label>
-          <input type="text" id="ip" placeholder="Dirección IP (e.g., 192.168.1.100)" />
-        </div>
+            // Estado interno (AÑADIDOS contadores para ups, camaraweb, mouse)
+            const state = {
+                contador: { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1, ups: 1, camaraweb: 1, mouse: 1 }, 
+                componentes: [],
+                scanning: false,
+                activeInput: null,
+                currentFacingMode: 'environment', 
+                torchAvailable: false,
+                lastScanTimestamp: 0
+            };
 
-        <div class="form-group" id="marguesi-group" style="display:none;">
-          <label>📌 COD. MARGUESI:*</label>
-          <div class="input-with-button">
-            <input id="marguesi" type="text" class="scanable" placeholder="Escanea o escribe el código de barras" autocomplete="off" />
-            <button class="scan-btn" data-input-id="marguesi" type="button">📷</button>
-          </div>
-        </div>
+            // DOM refs (Sin cambios)
+            const dom = {
+                messageBox: document.getElementById('message-box'),
+                tipoCargo: document.getElementById('tipoCargo'),
+                camposDinamicos: document.getElementById('camposDinamicos'),
+                tipoComponente: document.getElementById("tipoComponente"),
+                formularioComponente: document.getElementById("formularioComponente"),
+                codigoKitUsuario: document.getElementById("codigoKitUsuario"),
+                codigoKitCompContainer: document.getElementById("codigoKitCompContainer"),
+                codigoKitComp: document.getElementById("codigoKitComp"),
+                marguesi: document.getElementById("marguesi"), 
+                nro_serie: document.getElementById("nro_serie"), 
+                marca: document.getElementById("marca"), 
+                modelo: document.getElementById("modelo"), 
+                listaComponentes: document.getElementById("listaComponentes"),
+                resumenKit: document.getElementById("resumenKit"),
+                kitFinal: document.getElementById("kitFinal"),
+                videoContainer: document.getElementById('video-container'),
+                retryBtn: document.getElementById('retry-btn'),
+                scanableInputs: null, 
+                tecnicoResponsable: null,
+                sede: null,
+                dependencia: null,
+                estado: null, 
+                anexoKit: null, // Ref para Anexo general (asignado en init)
+                overlay: document.getElementById('overlay'),
+                progressBar: document.getElementById('progress-bar'),
+                loaderSub: document.getElementById('loader-sub'),
+                switchCameraBtn: document.getElementById('switch-camera'),
+                toggleTorchBtn: document.getElementById('toggle-torch')
+            };
 
-        <div class="form-group" id="nro_serie-group" style="display:none;">
-          <label for="nro_serie">📌 N° SERIE:*</label>
-          <input type="text" id="nro_serie" placeholder="Escribe el Número de Serie" />
-        </div>
-
-        <div id="video-container" style="display:none;">
-          <div class="video-controls" aria-hidden="false">
-            <button id="switch-camera" class="small-btn" title="Cambiar cámara">↺</button>
-            <button id="toggle-torch" class="small-btn" title="Linterna">🔦</button>
-          </div>
-          <div class="scan-frame"></div>
-        </div>
-        <button id="retry-btn" class="btn-danger" style="display:none;" type="button">Volver a intentar escaneo</button>
-
-        <div class="form-group" id="patrimonial-group" style="display:none;">
-          <label for="patrimonial">COD. PATRIMONIAL (Opcional):</label>
-          <input type="text" id="patrimonial" placeholder="Código Patrimonial" />
-        </div>
-
-        <div class="form-group" id="marca-group" style="display:none;">
-          <label for="marca">📌 Marca:*</label>
-          <input type="text" id="marca" placeholder="Marca del componente" />
-        </div>
-
-        <div class="form-group" id="modelo-group" style="display:none;">
-          <label for="modelo">📌 Modelo:*</label>
-          <input type="text" id="modelo" placeholder="Modelo del componente" />
-        </div>
-
-        <button class="btn-action" id="add-component" type="button">Agregar Componente</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Componentes añadidos al KIT</h3>
-      <ul id="listaComponentes"></ul>
-    </div>
-
-    <div class="card" id="resumenKit" style="display:none;">
-      <h3>Resumen del KIT</h3>
-      <p><strong>KIT y Titular:</strong> <span id="kitFinal"></span></p>
-      <h4>Componentes Registrados:</h4>
-      <ul id="componentesResumenLista" style="list-style-type:none;padding-left:0;"></ul>
-    </div>
-
-    <button class="btn-action" id="send-form" style="margin-bottom:26px;" type="button">Enviar KIT a Registro</button>
-
-  </div>
-</div>
-
-<div id="overlay" class="overlay" aria-hidden="true">
-  <div class="loader-card" role="status" aria-live="polite">
-    <div class="loader-title">Enviando datos...</div>
-    <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
-    <div id="loader-sub" class="loader-sub">Conectando con servidor...</div>
-  </div>
-</div>
-
-<script>
-/* -------------------------
-  App: Registro de Equipos (RECONSTRUIDO - PRO)
-  Integración: QuaggaJS PRO + UI + Autosave + Envío
----------------------------*/
-
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec";
-
-const state = {
-    contador: { cpu:1, monitor:1, teclado:1, laptop:1, docking:1, ups:1, camaraweb:1, mouse:1 },
-    componentes: [],
-    scanning: false,
-    activeInput: null,
-    currentFacingMode: 'environment',
-    torchAvailable: false,
-    lastScanTimestamp: 0
-};
-
-const dom = {
-    messageBox: document.getElementById('message-box'),
-    tipoCargo: document.getElementById('tipoCargo'),
-    camposDinamicos: document.getElementById('camposDinamicos'),
-    tipoComponente: document.getElementById("tipoComponente"),
-    formularioComponente: document.getElementById("formularioComponente"),
-    codigoKitUsuario: document.getElementById("codigoKitUsuario"),
-    codigoKitCompContainer: document.getElementById("codigoKitCompContainer"),
-    codigoKitComp: document.getElementById("codigoKitComp"),
-    marguesi: document.getElementById("marguesi"),
-    nro_serie: document.getElementById("nro_serie"),
-    marca: document.getElementById("marca"),
-    modelo: document.getElementById("modelo"),
-    listaComponentes: document.getElementById("listaComponentes"),
-    resumenKit: document.getElementById("resumenKit"),
-    kitFinal: document.getElementById("kitFinal"),
-    videoContainer: document.getElementById('video-container'),
-    retryBtn: document.getElementById('retry-btn'),
-    scanableInputs: null,
-    tecnicoResponsable: null,
-    sede: null,
-    dependencia: null,
-    estado: null,
-    anexoKit: null,
-    overlay: document.getElementById('overlay'),
-    progressBar: document.getElementById('progress-bar'),
-    loaderSub: document.getElementById('loader-sub'),
-    switchCameraBtn: document.getElementById('switch-camera'),
-    toggleTorchBtn: document.getElementById('toggle-torch')
-};
-
-function beep(duration = 0.05, frequency = 880, volume = 0.05) {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = 'sine';
-        o.frequency.value = frequency;
-        g.gain.value = volume;
-        o.connect(g);
-        g.connect(ctx.destination);
-        o.start(0);
-        setTimeout(()=>{ o.stop(); ctx.close(); }, duration*1000);
-    } catch(e){}
-}
-
-function showMessage(message, type='error') {
-    dom.messageBox.textContent = message;
-    dom.messageBox.className = 'card';
-    dom.messageBox.classList.add(`msg-${type}`);
-    dom.messageBox.style.display = 'block';
-    if (type !== 'info') {
-        setTimeout(()=>{ if(dom.messageBox.textContent === message) dom.messageBox.style.display='none'; },4500);
-    }
-}
-
-/* Autosave */
-const LS_KEY = 'registro_equipos_autosave_v1';
-const LS_PENDING_SUBMISSIONS = 'registro_equipos_pending_submissions_v1';
-
-function autosave() {
-    try {
-        const nombreResponsableInput = document.getElementById('nombreResponsable');
-        const tipoResponsableInput = document.getElementById('tipoResponsable');
-        const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
-        const ipInput = document.getElementById('ip');
-        const patrimonialInput = document.getElementById('patrimonial');
-        const marcaInput = document.getElementById('marca');
-        const modeloInput = document.getElementById('modelo');
-        const marguesiInput = document.getElementById('marguesi');
-        const nroSerieInput = document.getElementById('nro_serie');
-        const codigoKitCompInput = document.getElementById('codigoKitComp');
-        const tipoComponenteInput = document.getElementById('tipoComponente');
-
-        const payload = {
-            form: {
-                codigoKitUsuario: dom.codigoKitUsuario.value,
-                estado: dom.estado ? dom.estado.value : '',
-                tecnicoResponsable: dom.tecnicoResponsable ? dom.tecnicoResponsable.value : '',
-                sede: dom.sede ? dom.sede.value : '',
-                dependencia: dom.dependencia ? dom.dependencia.value : '',
-                anexoKit: dom.anexoKit ? dom.anexoKit.value : '',
-                tipoCargo: dom.tipoCargo.value,
-                nombreResponsable: (nombreResponsableInput||{}).value||'',
-                tipoResponsable: (tipoResponsableInput||{}).value||'',
-                usuarioFinalName: (usuarioFinalNameInput||{}).value||'',
-                ip: (ipInput||{}).value||'',
-                patrimonial: (patrimonialInput||{}).value||'',
-                marca: (marcaInput||{}).value||'',
-                modelo: (modeloInput||{}).value||'',
-                marguesi: (marguesiInput||{}).value||'',
-                nro_serie: (nroSerieInput||{}).value||'',
-                codigoKitComp: (codigoKitCompInput||{}).value||'',
-                tipoComponente: (tipoComponenteInput||{}).value||''
-            },
-            componentes: state.componentes,
-            contador: state.contador,
-            timestamp: Date.now()
-        };
-        localStorage.setItem(LS_KEY, JSON.stringify(payload));
-    } catch(e){ console.warn('Autosave failed', e); }
-}
-
-function restoreAutosave() {
-    try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return;
-        const payload = JSON.parse(raw);
-        if (!payload) return;
-        const f = payload.form || {};
-        if (f.estado && dom.estado) dom.estado.value = f.estado;
-        if (f.tecnicoResponsable && dom.tecnicoResponsable) dom.tecnicoResponsable.value = f.tecnicoResponsable;
-        if (f.sede && dom.sede) dom.sede.value = f.sede;
-        if (f.dependencia && dom.dependencia) dom.dependencia.value = f.dependencia;
-        if (f.anexoKit && dom.anexoKit) dom.anexoKit.value = f.anexoKit;
-        if (f.tipoCargo) dom.tipoCargo.value = f.tipoCargo;
-        if (f.tipoCargo) mostrarCampos();
-        setTimeout(()=>{
-            if (f.nombreResponsable) { const el = document.getElementById('nombreResponsable'); if(el) el.value = f.nombreResponsable; }
-            if (f.tipoResponsable) { const el = document.getElementById('tipoResponsable'); if(el) el.value = f.tipoResponsable; }
-            if (f.usuarioFinalName) { const el = document.getElementById('usuarioFinalName'); if(el) el.value = f.usuarioFinalName; }
-            if (f.tipoComponente) {
-                dom.tipoComponente.value = f.tipoComponente;
-                mostrarFormulario(false);
-                if (f.ip) { const el = document.getElementById('ip'); if(el) el.value = f.ip; }
-                if (f.patrimonial) { const el = document.getElementById('patrimonial'); if(el) el.value = f.patrimonial; }
-                if (f.marca) { const el = document.getElementById('marca'); if(el) el.value = f.marca; }
-                if (f.modelo) { const el = document.getElementById('modelo'); if(el) el.value = f.modelo; }
-                if (f.marguesi) { const el = document.getElementById('marguesi'); if(el) el.value = f.marguesi; }
-                if (f.nro_serie) { const el = document.getElementById('nro_serie'); if(el) el.value = f.nro_serie; }
-            }
-            state.componentes = payload.componentes || [];
-            const defaultContador = { cpu:1, monitor:1, teclado:1, laptop:1, docking:1, ups:1, camaraweb:1, mouse:1 };
-            state.contador = { ...defaultContador, ...(payload.contador || {}) };
-            refreshComponentList();
-            updateLocalSummary();
-            if (state.componentes.length > 0 || Object.values(f).some(val=>val !== '')) showMessage("Datos restaurados.", 'info');
-        },80);
-    } catch(e){ console.warn('Restore autosave failed', e); }
-}
-
-/* Validaciones */
-function animateAndFocusInvalid(el) {
-    if (!el) return;
-    el.setAttribute('aria-invalid','true');
-    el.classList.add('input-invalid','input-shake');
-    el.scrollIntoView({behavior:'smooth',block:'center'});
-    setTimeout(()=>{ el.classList.remove('input-shake'); },600);
-    try{ el.focus({preventScroll:true}); }catch(e){ el.focus(); }
-}
-function clearFieldError(el){ if(!el) return; const s = el.parentElement.querySelector('.field-error'); if(s) s.remove(); }
-function showFieldError(el,msg){ if(!el) return; let s = el.parentElement.querySelector('.field-error'); if(!s){ s=document.createElement('span'); s.className='field-error'; el.parentElement.appendChild(s);} s.textContent=msg; }
-
-/* Envío a Google Sheets */
-async function sendDataToSheet(data, options={showOverlay:true,clearOnSuccess:true,attemptNetworkOnly:false}) {
-    const payload = {
-        kitCode: data.kitCode,
-        tecnico: data.tecnico,
-        estado: data.estado,
-        sede: data.sede,
-        dependencia: data.dependencia,
-        anexoKit: data.anexoKit,
-        tipoCargo: data.tipoCargo,
-        responsableTipo: data.responsableTipo,
-        responsableNombre: data.responsableNombre,
-        usuarioFinal: data.usuarioFinal,
-        components: data.components
-    };
-    try {
-        if (options.showOverlay) showOverlay(true,'Enviando...');
-        if (options.showOverlay) await simulateProgress(0.15);
-        const response = await fetch(SHEET_URL, {
-            method:'POST',
-            mode:'no-cors',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify(payload)
-        });
-        if (options.showOverlay) await simulateProgress(1.0);
-        if (options.showOverlay) showOverlay(false);
-        if (options.clearOnSuccess) localStorage.removeItem(LS_KEY);
-        if (!options.attemptNetworkOnly) { showMessage("¡Envío exitoso!",'success'); resetForm(); }
-    } catch(error) {
-        if (options.showOverlay) showOverlay(false);
-        console.error('Error al enviar:', error);
-        if (!options.attemptNetworkOnly) { pushPendingSubmission(payload); showMessage("Error de envío. Datos guardados localmente.",'error'); }
-        else { showMessage(`Reintento falló para ${data.kitCode}.`,'error'); throw error; }
-    }
-}
-function simulateProgress(target=1.0){ return new Promise(resolve=>{ if(dom.progressBar) dom.progressBar.style.width = `${target*100}%`; setTimeout(resolve,350); }); }
-
-/* Campos dinámicos */
-function mostrarCampos() {
-    const tipo = (dom.tipoCargo.value||'').toString().trim().toUpperCase();
-    const contenedor = dom.camposDinamicos;
-    contenedor.innerHTML = "";
-    if (!tipo) { updateLocalSummary(); return; }
-    const bloqueResponsable = `
-       <div class="form-group full-width-field" id="responsable-block">
-           <label for="nombreResponsable">RESPONSABLE DEL CARGO:*</label>
-           <div class="responsable-group">
-               <select id="tipoResponsable" required>
-                   <option value="728">728</option>
-                   <option value="276">276</option>
-                   <option value="CAS">CAS</option>
-               </select>
-               <input type="text" id="nombreResponsable" placeholder="Nombre Asignado" required />
-           </div>
-       </div>`;
-    const bloqueUsuarioFinal = `
-       <div class="form-group full-width-field" id="usuario-final-block">
-           <label for="usuarioFinalName">USUARIO FINAL DEL EQUIPO (TITULAR):*</label>
-           <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
-       </div>`;
-    const isUserFinalRequired = (tipo === "VOL" || tipo === "TER" || tipo === "SEC");
-    let htmlContent = bloqueResponsable;
-    if (isUserFinalRequired) { htmlContent += bloqueUsuarioFinal; contenedor.classList.add('stacked'); }
-    else contenedor.classList.remove('stacked');
-    contenedor.innerHTML = htmlContent;
-    const nombreRespInput = document.getElementById('nombreResponsable');
-    const usuarioFinalInput = document.getElementById('usuarioFinalName');
-    const tipoRespSelect = document.getElementById('tipoResponsable');
-    if (nombreRespInput) nombreRespInput.addEventListener('input',()=>{ updateLocalSummary(); autosave(); });
-    if (usuarioFinalInput) usuarioFinalInput.addEventListener('input',()=>{ updateLocalSummary(); autosave(); });
-    if (tipoRespSelect) tipoRespSelect.addEventListener('change',()=>{ updateLocalSummary(); autosave(); });
-    updateLocalSummary();
-}
-
-/* Resumen y lista */
-function updateLocalSummary() {
-    const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
-    const nombreResponsableInput = document.getElementById('nombreResponsable');
-    let titularName = "PENDIENTE";
-    if (usuarioFinalNameInput && usuarioFinalNameInput.value) titularName = usuarioFinalNameInput.value.toUpperCase().trim();
-    else if (nombreResponsableInput && nombreResponsableInput.value) titularName = nombreResponsableInput.value.toUpperCase().trim();
-    const componentesResumenLista = document.getElementById('componentesResumenLista');
-    if (state.componentes.length > 0) {
-        dom.resumenKit.style.display = "block";
-        dom.kitFinal.textContent = `${dom.codigoKitUsuario.value} - ${titularName}`;
-        componentesResumenLista.innerHTML = state.componentes.map(c=>{
-            let parts = [`<strong>[${c.tipo.toUpperCase()}]</strong>`];
-            if (c.codigoKitComp) parts.push(`${c.codigoKitComp}:`);
-            let details=[];
-            if (c.ip) details.push(`IP: ${c.ip}`);
-            if (c.marca && c.modelo) details.push(`${c.marca} ${c.modelo}`);
-            if (c.patrimonial) details.push(`Patr: ${c.patrimonial}`);
-            if (details.length>0) parts.push(`<span style="font-style:italic;">${details.join(' | ')}</span>`);
-            if (c.marguesi) parts.push(`(CB: ${c.marguesi})`);
-            if (c.nro_serie) parts.push(`(SN: ${c.nro_serie})`);
-            return `<li style="margin-bottom:6px;border-bottom:1px dotted #ccc;padding-bottom:4px;font-size:0.9em;">${parts.join(' ')}</li>`;
-        }).join('');
-    } else {
-        dom.resumenKit.style.display = "none";
-        componentesResumenLista.innerHTML = '';
-    }
-}
-function refreshComponentList() {
-    dom.listaComponentes.innerHTML = '';
-    for (const c of state.componentes) {
-        const li = document.createElement('li');
-        let parts=[`[${c.tipo.toUpperCase()}]`];
-        if (c.codigoKitComp) parts.push(`${c.codigoKitComp}`);
-        if (c.ip) parts.push(`IP: ${c.ip}`);
-        if (c.patrimonial) parts.push(`Patrimonial: ${c.patrimonial}`);
-        if (c.marca) parts.push(`Marca: ${c.marca}`);
-        if (c.modelo) parts.push(`Modelo: ${c.modelo}`);
-        if (c.marguesi) parts.push(`Marguesi: ${c.marguesi}`);
-        if (c.nro_serie) parts.push(`N° Serie: ${c.nro_serie}`);
-        li.textContent = parts.join(' - ');
-        dom.listaComponentes.appendChild(li);
-    }
-}
-
-/* Mostrar formulario */
-function mostrarFormulario(validateBefore=true) {
-    const tipoSeleccionado = dom.tipoComponente.value;
-    if (validateBefore && tipoSeleccionado && !validateInfoFields()) {
-        dom.tipoComponente.value = ""; dom.formularioComponente.style.display = "none"; return;
-    }
-    actualizarCamposPorTipo(tipoSeleccionado);
-    const tipo = dom.tipoComponente.value;
-    dom.formularioComponente.style.display = tipo ? "block" : "none";
-    if (tipo) {
-        const codigoKitUsuario = dom.codigoKitUsuario.value;
-        if (!codigoKitUsuario || codigoKitUsuario === "Cargando...") {
-            showMessage("Esperando asignación de Código de KIT...", "info");
-            dom.tipoComponente.value = ""; dom.formularioComponente.style.display = "none"; return;
-        }
-        const isKitCompRequired = ['cpu','monitor','teclado','laptop','docking','ups','camaraweb','mouse'].includes(tipo);
-        dom.codigoKitCompContainer.style.display = isKitCompRequired ? "block" : "none";
-        if (isKitCompRequired) { if (!state.contador[tipo]) state.contador[tipo]=1; const currentCount = state.contador[tipo]; dom.codigoKitComp.value = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(currentCount).padStart(4,'0')}`; }
-        else dom.codigoKitComp.value = "";
-        if (validateBefore) {
-            document.getElementById('ip') && (document.getElementById('ip').value="");
-            document.getElementById('patrimonial') && (document.getElementById('patrimonial').value="");
-            dom.marguesi.value=""; dom.nro_serie.value=""; dom.marca.value=""; dom.modelo.value="";
-        }
-        stopScanning(false);
-    }
-}
-
-/* Agregar componente */
-function agregarComponente() {
-    if (!validateInfoFields()) return;
-    const tipo = dom.tipoComponente.value;
-    if (!tipo) { showMessage("Seleccione un Tipo de Componente.",'error'); animateAndFocusInvalid(dom.tipoComponente); return; }
-    if (!validateComponentFields(tipo)) return;
-    const marguesi = (dom.marguesi.value||'').toUpperCase().trim();
-    const nroSerie = (dom.nro_serie.value||'').toUpperCase().trim();
-    const marca = (dom.marca.value||'').toUpperCase().trim();
-    const modelo = (dom.modelo||'').toUpperCase().trim();
-    const ip = (document.getElementById('ip')||{}).value||'';
-    const patrimonial = (document.getElementById('patrimonial')||{}).value||'';
-    let codigoKitComp = "SIN-KIT";
-    const isKitCompRequired = ['cpu','monitor','teclado','laptop','docking','ups','camaraweb','mouse'].includes(tipo);
-    if (isKitCompRequired) codigoKitComp = dom.codigoKitComp.value;
-    state.componentes.push({ tipo, marguesi, nro_serie:nroSerie, marca, modelo, codigoKitComp: isKitCompRequired?codigoKitComp:null, ip: ip||null, patrimonial: patrimonial||null });
-    if (isKitCompRequired) state.contador[tipo] = (state.contador[tipo]||1)+1;
-    refreshComponentList(); updateLocalSummary(); showMessage(`Componente ${tipo.toUpperCase()} agregado.`,'success'); beep(0.06,880,0.06);
-    autosave(); dom.tipoComponente.value=""; mostrarFormulario(false);
-}
-
-/* Reset y obtener nuevo KIT */
-function resetForm(){ const allInputs=document.querySelectorAll('input[type="text"]:not([readonly]), select'); allInputs.forEach(input=>{ if(input.id==='tipoResponsable') return; if(input.tagName==='SELECT') input.value=''; else input.value=''; input.removeAttribute('aria-invalid'); input.classList.remove('input-invalid'); clearFieldError(input); }); dom.anexoKit&&(dom.anexoKit.value=''); dom.listaComponentes.innerHTML=''; state.componentes=[]; const defaultContador={ cpu:1, monitor:1, teclado:1, laptop:1, docking:1, ups:1, camaraweb:1, mouse:1 }; state.contador={...defaultContador}; dom.tipoCargo.value=''; mostrarCampos(); dom.resumenKit.style.display='none'; dom.formularioComponente.style.display='none'; localStorage.removeItem(LS_KEY); dom.codigoKitUsuario.value='Cargando...'; getNewKitCode(); }
-
-function enviarFormulario(){ if(!validateInfoFields()) return; if(state.componentes.length===0){ showMessage("Debe agregar al menos un componente.",'error'); animateAndFocusInvalid(dom.tipoComponente); return; } const tipoResponsableInput=document.getElementById('tipoResponsable'); const nombreResponsableInput=document.getElementById('nombreResponsable'); const usuarioFinalNameInput=document.getElementById('usuarioFinalName'); const nombreResponsable = nombreResponsableInput?nombreResponsableInput.value.toUpperCase().trim():""; const nombreUsuarioFinal = (usuarioFinalNameInput&&usuarioFinalNameInput.value)?usuarioFinalNameInput.value.toUpperCase().trim():nombreResponsable; const submissionData = { kitCode: dom.codigoKitUsuario.value, estado: dom.estado.options[dom.estado.selectedIndex].value, tecnico: dom.tecnicoResponsable.options[dom.tecnicoResponsable.selectedIndex].text, sede: dom.sede.options[dom.sede.selectedIndex].text, dependencia: dom.dependencia.options[dom.dependencia.selectedIndex].text, anexoKit: (dom.anexoKit||{}).value||'', tipoCargo: dom.tipoCargo.options[dom.tipoCargo.selectedIndex].text, responsableTipo: tipoResponsableInput?tipoResponsableInput.value:"N/A", responsableNombre: nombreResponsable, usuarioFinal: nombreUsuarioFinal, components: state.componentes }; sendDataToSheet(submissionData,{showOverlay:true,clearOnSuccess:true,attemptNetworkOnly:false}); }
-
-async function getNewKitCode() {
-    let finalKitCode = "KIT-0001";
-    try {
-        dom.codigoKitUsuario.value = "Cargando...";
-        showMessage("Obteniendo ID de KIT...", 'info');
-        const response = await fetch(SHEET_URL);
-        if (!response.ok) {
-            let errorBody = "Error de red";
-            try { errorBody = await response.text(); } catch(_) {}
-            throw new Error(`Error ${response.status}: ${response.statusText} - ${errorBody}`);
-        }
-        const data = await response.json();
-        if (data.result === "success" && data.nextKitCode) { finalKitCode = data.nextKitCode; showMessage(`ID de KIT asignado: ${finalKitCode}`,'success'); }
-        else throw new Error(data.message || "Respuesta inválida del script");
-    } catch(error) {
-        console.error('Error al obtener el nuevo KIT ID:', error);
-        if (error instanceof TypeError && error.message.includes('Failed to fetch')) showMessage("Error de conexión (CORS?). Usando ID por defecto.", 'error');
-        else showMessage(`Error al obtener ID: ${error.message}. Usando ID por defecto.`, 'error');
-        finalKitCode = "KIT-0001";
-    } finally {
-        dom.codigoKitUsuario.value = finalKitCode;
-        restoreAutosave();
-    }
-}
-
-function actualizarCamposPorTipo(tipo){ const ipGroup=document.getElementById('ip-group'); const marguesiGroup=document.getElementById('marguesi-group'); const patrimonialGroup=document.getElementById('patrimonial-group'); const marcaGroup=document.getElementById('marca-group'); const modeloGroup=document.getElementById('modelo-group'); const nroSerieGroup=document.getElementById('nro_serie-group'); const isCPUOrLaptop=['cpu','laptop'].includes(tipo); const isPeriferico=['fotocopiadora','impresora','escaner','ups','camaraweb'].includes(tipo); const mostrarIP = isCPUOrLaptop || isPeriferico; ipGroup.style.display = mostrarIP ? 'block' : 'none'; const mostrarCamposEstandar = tipo !== ''; marguesiGroup.style.display = mostrarCamposEstandar ? 'block' : 'none'; patrimonialGroup.style.display = mostrarCamposEstandar ? 'block' : 'none'; marcaGroup.style.display = mostrarCamposEstandar ? 'block' : 'none'; modeloGroup.style.display = mostrarCamposEstandar ? 'block' : 'none'; nroSerieGroup.style.display = mostrarCamposEstandar ? 'block' : 'none'; [document.getElementById('ip'), dom.marguesi, document.getElementById('patrimonial'), dom.marca, dom.modelo, dom.nro_serie].filter(Boolean).forEach(el=>{ el.removeAttribute('aria-invalid'); el.classList.remove('input-invalid'); clearFieldError(el); if (el.id==='marguesi' && el.parentElement.classList.contains('input-with-button')) el.parentElement.classList.remove('input-invalid'); });
-}
-
-/* ============================
-   QUAGGAJS - BLOQUE PRO INTEGRADO
-   ============================ */
-
-            // ***************************************************************
-            // * IMPLEMENTACIÓN DE QUAGGAJS (CÁMARA Y ESCÁNER) - VERSIÓN PRO *
-            // * Reemplaza el bloque anterior entre los comentarios de inicio/fin *
-            // ***************************************************************
-
-            // Config y estado extra para lectura corporativa
-            let _pro_lastCodes = []; // buffer de últimos códigos detectados
-            const PRO_MAX_BUFFER = 7; // últimos frames a considerar
-            const PRO_REQUIRED_REPETITIONS = 3; // repeticiones iguales necesarias
-            const PRO_ERROR_THRESHOLD = 45; // suma de errores aceptable (ajustable)
-            const PRO_MIN_LENGTH = 12;
-            const PRO_CODE_REGEX = /^[A-Z0-9]{12}$/i; // alfanumérico 12
-
-            // Intenta aplicar constraints "pro" sobre el track activo (HDR / exposure / focus)
-            async function applyProCameraConstraints() {
+            /**********************
+             * UTIL - sonido corto
+             **********************/
+            function beep(duration = 0.05, frequency = 880, volume = 0.05) { 
                 try {
-                    const track = Quagga.CameraAccess.getActiveTrack();
-                    if (!track) return;
-                    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-                    const constraints = { advanced: [] };
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'sine';
+                    o.frequency.value = frequency;
+                    g.gain.value = volume;
+                    o.connect(g);
+                    g.connect(ctx.destination);
+                    o.start(0);
+                    setTimeout(() => { o.stop(); ctx.close(); }, duration * 1000);
+                } catch (e) { /* silent */ }
+            }
 
-                    // Intentar exposureMode / whiteBalance / focusMode si el dispositivo lo soporta
-                    if (capabilities.exposureMode && capabilities.exposureMode.length) {
-                        // Algunos navegadores soportan exposureMode: 'continuous'
-                        constraints.advanced.push({ exposureMode: 'continuous' });
-                    }
-                    if (capabilities.whiteBalanceMode && capabilities.whiteBalanceMode.length) {
-                        constraints.advanced.push({ whiteBalanceMode: 'continuous' });
-                    }
-                    if (capabilities.focusMode && capabilities.focusMode.length) {
-                        constraints.advanced.push({ focusMode: 'continuous' });
-                    }
-
-                    // Intentar forzar un rango de resolución alto (HDR-friendly)
-                    constraints.width = { ideal: 1920 };
-                    constraints.height = { ideal: 1080 };
-
-                    // Aplicar si tenemos algo que aplicar
-                    if (constraints.advanced.length || constraints.width || constraints.height) {
-                        await track.applyConstraints(constraints).catch(e => {
-                            // No es crítico; solo informar
-                            console.warn('applyProCameraConstraints not fully supported:', e);
-                        });
-                    }
-                } catch (e) {
-                    console.warn('applyProCameraConstraints failed', e);
+            /**********************
+             * Mensajes UI
+             **********************/
+            function showMessage(message, type = 'error') { 
+                dom.messageBox.textContent = message;
+                dom.messageBox.className = 'card';
+                dom.messageBox.classList.add(`msg-${type}`);
+                dom.messageBox.style.display = 'block';
+                // No ocultar mensajes de 'info' automáticamente
+                if (type !== 'info') {
+                     // Solo ocultar error y success después de un tiempo
+                     setTimeout(() => { 
+                         // Verificar si el mensaje sigue siendo el mismo antes de ocultar
+                         if (dom.messageBox.textContent === message) {
+                             dom.messageBox.style.display = 'none'; 
+                         }
+                     }, 4500);
                 }
             }
 
-            // Refocus periódico (algunos Android requieren re-enfoque)
-            let _pro_refocusInterval = null;
-            function startPeriodicRefocus() {
-                try {
-                    if (_pro_refocusInterval) clearInterval(_pro_refocusInterval);
-                    const track = Quagga.CameraAccess.getActiveTrack();
-                    if (!track) return;
-                    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-                    // Si el dispositivo soporta focusDistance o focusMode, intentaremos reaplicar constraints
-                    if ((capabilities.focusMode && capabilities.focusMode.length) || capabilities.focusDistance) {
-                        _pro_refocusInterval = setInterval(async () => {
-                            try {
-                                await applyProCameraConstraints();
-                            } catch(e){}
-                        }, 1500); // cada 1.5s
-                    }
-                } catch(e){ console.warn('startPeriodicRefocus', e); }
+            /**********************
+             * AUTOSAVE (localStorage) - (Sin cambios)
+             **********************/
+            const LS_KEY = 'registro_equipos_autosave_v1';
+            const LS_PENDING_SUBMISSIONS = 'registro_equipos_pending_submissions_v1';
+
+            function autosave() {
+                 try {
+                     const nombreResponsableInput = document.getElementById('nombreResponsable');
+                     const tipoResponsableInput = document.getElementById('tipoResponsable');
+                     const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
+                     const ipInput = document.getElementById('ip');
+                     const patrimonialInput = document.getElementById('patrimonial');
+                     const marcaInput = document.getElementById('marca');
+                     const modeloInput = document.getElementById('modelo');
+                     const marguesiInput = document.getElementById('marguesi');
+                     const nroSerieInput = document.getElementById('nro_serie');
+                     const codigoKitCompInput = document.getElementById('codigoKitComp');
+                     const tipoComponenteInput = document.getElementById('tipoComponente');
+
+                     const payload = {
+                         form: {
+                             codigoKitUsuario: dom.codigoKitUsuario.value,
+                             estado: dom.estado ? dom.estado.value : '',
+                             tecnicoResponsable: dom.tecnicoResponsable ? dom.tecnicoResponsable.value : '',
+                             sede: dom.sede ? dom.sede.value : '',
+                             dependencia: dom.dependencia ? dom.dependencia.value : '',
+                             anexoKit: dom.anexoKit ? dom.anexoKit.value : '', // Anexo general
+                             tipoCargo: dom.tipoCargo.value,
+                             nombreResponsable: (nombreResponsableInput || {}).value || '',
+                             tipoResponsable: (tipoResponsableInput || {}).value || '',
+                             usuarioFinalName: (usuarioFinalNameInput || {}).value || '',
+                             // campos temporales de componente
+                             ip: (ipInput || {}).value || '',
+                             patrimonial: (patrimonialInput || {}).value || '',
+                             marca: (marcaInput || {}).value || '',
+                             modelo: (modeloInput || {}).value || '',
+                             marguesi: (marguesiInput || {}).value || '', 
+                             nro_serie: (nroSerieInput || {}).value || '',
+                             codigoKitComp: (codigoKitCompInput || {}).value || '',
+                             tipoComponente: (tipoComponenteInput || {}).value || ''
+                         },
+                         componentes: state.componentes,
+                         contador: state.contador,
+                         timestamp: Date.now()
+                     };
+                     localStorage.setItem(LS_KEY, JSON.stringify(payload));
+                 } catch (e) { console.warn('Autosave failed', e); }
             }
-            function stopPeriodicRefocus() {
-                if (_pro_refocusInterval) {
-                    clearInterval(_pro_refocusInterval);
-                    _pro_refocusInterval = null;
+
+            // Restaurar si existe - (AÑADIDO defaultContador actualizado)
+            function restoreAutosave() {
+                 try {
+                     const raw = localStorage.getItem(LS_KEY);
+                     if (!raw) return;
+                     const payload = JSON.parse(raw);
+                     if (!payload) return;
+
+                     const f = payload.form || {};
+                     // NO restaurar codigoKitUsuario aquí si ya se obtuvo del script
+                     if (f.estado && dom.estado) dom.estado.value = f.estado;
+                     if (f.tecnicoResponsable && dom.tecnicoResponsable) dom.tecnicoResponsable.value = f.tecnicoResponsable;
+                     if (f.sede && dom.sede) dom.sede.value = f.sede;
+                     if (f.dependencia && dom.dependencia) dom.dependencia.value = f.dependencia;
+                     if (f.anexoKit && dom.anexoKit) dom.anexoKit.value = f.anexoKit; // Restaurar anexo general
+                     if (f.tipoCargo) dom.tipoCargo.value = f.tipoCargo;
+
+                     if (f.tipoCargo) mostrarCampos(); // Esto recreará los campos dinámicos
+
+                     // Esperar un ciclo para que los campos dinámicos existan
+                     setTimeout(() => {
+                         // Restaurar valores de campos dinámicos
+                         if (f.nombreResponsable) {
+                             const el = document.getElementById('nombreResponsable');
+                             if (el) el.value = f.nombreResponsable;
+                         }
+                         if (f.tipoResponsable) {
+                             const el = document.getElementById('tipoResponsable');
+                             if (el) el.value = f.tipoResponsable;
+                         }
+                         if (f.usuarioFinalName) {
+                            const el = document.getElementById('usuarioFinalName');
+                            if (el) el.value = f.usuarioFinalName;
+                         }
+                         
+                         // Restaurar estado del formulario de componente si estaba abierto
+                         if (f.tipoComponente) {
+                             dom.tipoComponente.value = f.tipoComponente;
+                             // Llamar a mostrarFormulario SIN validar info general (ya se hizo o se restauró)
+                             mostrarFormulario(false); 
+                             // Restaurar valores dentro del formulario de componente
+                             if (f.ip) {
+                                 const el = document.getElementById('ip');
+                                 if (el) el.value = f.ip;
+                             }
+                             if (f.patrimonial) {
+                                 const el = document.getElementById('patrimonial');
+                                 if (el) el.value = f.patrimonial;
+                             }
+                             if (f.marca) {
+                                 const el = document.getElementById('marca');
+                                 if (el) el.value = f.marca;
+                             }
+                             if (f.modelo) {
+                                 const el = document.getElementById('modelo');
+                                 if (el) el.value = f.modelo;
+                             }
+                             if (f.marguesi) {
+                                 const el = document.getElementById('marguesi');
+                                 if (el) el.value = f.marguesi;
+                             }
+                             if (f.nro_serie) {
+                                 const el = document.getElementById('nro_serie');
+                                 if (el) el.value = f.nro_serie;
+                             }
+                             // No restaurar codigoKitComp, se regenera al mostrar
+                         }
+                         
+                         // Restaurar lista de componentes y contadores
+                         state.componentes = payload.componentes || [];
+                         // Asegurar que contador tenga todas las claves esperadas
+                         const defaultContador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1, ups: 1, camaraweb: 1, mouse: 1 };
+                         state.contador = { ...defaultContador, ...(payload.contador || {}) };
+
+                         refreshComponentList();
+                         updateLocalSummary(); // Actualizar resumen visual
+
+                         if (state.componentes.length > 0 || Object.values(f).some(val => val !== '')) {
+                             // Solo mostrar si hay componentes o algún campo del form tenía valor
+                             showMessage("Datos restaurados.", 'info');
+                         }
+                     }, 80);
+
+                 } catch (e) { console.warn('Restore autosave failed', e); }
+            }
+
+            // Guardar submission pendiente (igual que antes)
+            function pushPendingSubmission(submission) { 
+                try {
+                    const raw = localStorage.getItem(LS_PENDING_SUBMISSIONS);
+                    const arr = raw ? JSON.parse(raw) : [];
+                    arr.push({ submission, timestamp: Date.now() });
+                    localStorage.setItem(LS_PENDING_SUBMISSIONS, JSON.stringify(arr));
+                } catch (e) { console.warn('pushPendingSubmission', e); }
+            }
+            // Reintentar submissions pendientes (igual que antes)
+            async function retryPendingSubmissions() { 
+                 try {
+                     const raw = localStorage.getItem(LS_PENDING_SUBMISSIONS);
+                     if (!raw) return;
+                     let arr = JSON.parse(raw);
+                     if (!arr || !arr.length) return;
+
+                     showMessage(`Reintentando ${arr.length} envíos pendientes...`, 'info');
+
+                     let successCount = 0;
+                     const failedItems = [];
+
+                     for (const item of arr) {
+                         try {
+                             await sendDataToSheet(item.submission, { showOverlay: false, clearOnSuccess: false, attemptNetworkOnly: true });
+                             successCount++;
+                         } catch (e) {
+                             console.warn('Pending send failed', e);
+                             failedItems.push(item); // Mantener los que fallaron
+                         }
+                     }
+                     
+                     if (failedItems.length === 0) {
+                         localStorage.removeItem(LS_PENDING_SUBMISSIONS);
+                         if (successCount > 0) { // Solo mostrar si hubo éxito
+                            showMessage("Envíos pendientes procesados.", 'success');
+                         } else {
+                             // Si no había pendientes válidos o algo raro pasó
+                             dom.messageBox.style.display = 'none'; // Ocultar mensaje de reintento
+                         }
+                     } else {
+                         localStorage.setItem(LS_PENDING_SUBMISSIONS, JSON.stringify(failedItems));
+                         showMessage(`${failedItems.length} envíos aún pendientes.`, 'error');
+                     }
+                 } catch (e) { console.warn('retryPendingSubmissions', e); }
+            }
+            // Listener online (igual que antes)
+            window.addEventListener('online', () => { 
+                showMessage('Conexión restablecida.', 'info');
+                retryPendingSubmissions(); 
+            });
+
+            /**********************
+             * Validaciones (Sin cambios)
+             **********************/
+            function validateInfoFields() {
+                const nombreResponsableInput = document.getElementById('nombreResponsable');
+                const tipoResponsableInput = document.getElementById('tipoResponsable');
+                const anexoKitInput = dom.anexoKit; 
+                // Campos generales obligatorios
+                const infoInputs = [dom.tecnicoResponsable, dom.sede, dom.dependencia, dom.tipoCargo, dom.estado].filter(Boolean);
+                let firstInvalidElement = null;
+
+                // Validar campos generales obligatorios
+                for (const input of infoInputs) {
+                     const value = (input.value || '').toString().trim();
+                     if (value === '' || value === 'Seleccione...' || value === '-- Seleccionar --') {
+                         animateAndFocusInvalid(input);
+                         if (!firstInvalidElement) firstInvalidElement = input;
+                     } else {
+                         // Limpiar error visual si ya no es inválido (aunque clearInvalidOnInput lo hará al interactuar)
+                         input.removeAttribute('aria-invalid');
+                         input.classList.remove('input-invalid');
+                         clearFieldError(input);
+                     }
+                }
+
+                 // Validar formato de Anexo General SI TIENE VALOR
+                 if (anexoKitInput && anexoKitInput.value.trim() && !/^\d{5}$/.test(anexoKitInput.value.trim())) {
+                     animateAndFocusInvalid(anexoKitInput);
+                     showFieldError(anexoKitInput, "Anexo debe ser exactamente 5 dígitos.");
+                     if (!firstInvalidElement) firstInvalidElement = anexoKitInput;
+                 } else if (anexoKitInput) {
+                     // Limpiar error si está vacío o válido
+                     anexoKitInput.removeAttribute('aria-invalid');
+                     anexoKitInput.classList.remove('input-invalid');
+                     clearFieldError(anexoKitInput); 
+                 }
+                 
+                // Validar campos dinámicos de Responsable (obligatorios)
+                let dynamicValid = true;
+                if (nombreResponsableInput && !nombreResponsableInput.value.trim()) { 
+                    animateAndFocusInvalid(nombreResponsableInput);
+                    if (!firstInvalidElement) firstInvalidElement = nombreResponsableInput;
+                    dynamicValid = false;
+                 } else if (nombreResponsableInput) {
+                     nombreResponsableInput.removeAttribute('aria-invalid');
+                     nombreResponsableInput.classList.remove('input-invalid');
+                     clearFieldError(nombreResponsableInput);
+                 }
+
+                if (tipoResponsableInput && !tipoResponsableInput.value.trim()) { 
+                    animateAndFocusInvalid(tipoResponsableInput);
+                    if (!firstInvalidElement) firstInvalidElement = tipoResponsableInput;
+                    dynamicValid = false;
+                 } else if (tipoResponsableInput) {
+                     tipoResponsableInput.removeAttribute('aria-invalid');
+                     tipoResponsableInput.classList.remove('input-invalid');
+                     clearFieldError(tipoResponsableInput);
+                 }
+
+                const tipoCargo = dom.tipoCargo.value;
+                const isUserFinalRequired = (tipoCargo === "VOL" || tipoCargo === "TER" || tipoCargo === "SEC");
+                if (isUserFinalRequired) { 
+                    const usuarioFinalInput = document.getElementById('usuarioFinalName');
+                    if (usuarioFinalInput && !usuarioFinalInput.value.trim()) {
+                        animateAndFocusInvalid(usuarioFinalInput);
+                        if (!firstInvalidElement) firstInvalidElement = usuarioFinalInput;
+                        dynamicValid = false;
+                    } else if (usuarioFinalInput) {
+                        usuarioFinalInput.removeAttribute('aria-invalid');
+                        usuarioFinalInput.classList.remove('input-invalid');
+                        clearFieldError(usuarioFinalInput);
+                    }
+                 }
+
+                const isValid = !firstInvalidElement && dynamicValid; // Asegurar que dinámicos también sean válidos
+                if (!isValid) { 
+                    // Mostrar mensaje solo si el error NO es del anexo (que es opcional)
+                    if (!firstInvalidElement || firstInvalidElement.id !== 'anexoKit'){
+                        showMessage("Por favor, complete campos obligatorios (*).", 'error');
+                    }
+                }
+                return isValid;
+            }
+            
+            // Validación específica de campos de componente
+             function validateComponentFields(tipo) {
+                 const ip = document.getElementById('ip'); // Opcional
+                 const marguesi = dom.marguesi; // Requerido
+                 const nroSerie = dom.nro_serie; // Requerido
+                 const marca = dom.marca; // Requerido
+                 const modelo = dom.modelo; // Requerido
+
+                 let isValid = true;
+                 let firstInvalidElement = null;
+
+                 // Marguesi (Requerido)
+                 if (!marguesi || !marguesi.value.trim()) {
+                     isValid = false; if (!firstInvalidElement) firstInvalidElement = marguesi;
+                 }
+                 // Marca (Requerido)
+                 if (!marca || !marca.value.trim()) {
+                     isValid = false; if (!firstInvalidElement) firstInvalidElement = marca;
+                 }
+                 // Modelo (Requerido)
+                 if (!modelo || !modelo.value.trim()) {
+                     isValid = false; if (!firstInvalidElement) firstInvalidElement = modelo;
+                 }
+                 // N° Serie (Requerido)
+                 if (!nroSerie || !nroSerie.value.trim()) {
+                     isValid = false; if (!firstInvalidElement) firstInvalidElement = nroSerie;
+                 }
+
+                 // Aplicar animación solo a los inválidos requeridos
+                 [marguesi, marca, modelo, nroSerie].filter(Boolean).forEach(el => {
+                     if (!el.value.trim()) { // Si es requerido y está vacío
+                         animateAndFocusInvalid(el);
+                         // Si es el marguesi, animar el contenedor
+                         if (el.id === 'marguesi' && el.parentElement.classList.contains('input-with-button')) {
+                            el.parentElement.classList.add('input-invalid');
+                         }
+                     } else { // Si tiene valor (o no es requerido) limpiar visualmente
+                         el.removeAttribute('aria-invalid');
+                         el.classList.remove('input-invalid');
+                         clearFieldError(el);
+                         if (el.id === 'marguesi' && el.parentElement.classList.contains('input-with-button')) {
+                            el.parentElement.classList.remove('input-invalid');
+                         }
+                     }
+                 });
+
+                 // Limpiar visualmente IP (opcional)
+                 if (ip) {
+                    ip.removeAttribute('aria-invalid');
+                    ip.classList.remove('input-invalid');
+                    clearFieldError(ip);
+                 }
+                 
+                 if (!isValid) {
+                     showMessage("Por favor, complete los campos (*) del componente.", 'error');
+                 }
+                 return isValid;
+             }
+
+
+            /**********************
+             * Envío a Google Sheets (Sin cambios)
+             **********************/
+            async function sendDataToSheet(data, options = { showOverlay: true, clearOnSuccess: true, attemptNetworkOnly: false }) {
+                const payload = {
+                    kitCode: data.kitCode,
+                    tecnico: data.tecnico,
+                    estado: data.estado,
+                    sede: data.sede,
+                    dependencia: data.dependencia,
+                    anexoKit: data.anexoKit, // Anexo general
+                    tipoCargo: data.tipoCargo,
+                    responsableTipo: data.responsableTipo,
+                    responsableNombre: data.responsableNombre,
+                    usuarioFinal: data.usuarioFinal,
+                    components: data.components 
+                };
+                 try {
+                     if (options.showOverlay) showOverlay(true, 'Enviando...'); 
+                     if (options.showOverlay) await simulateProgress(0.15);
+                     const response = await fetch(SHEET_URL, {
+                         method: 'POST',
+                         mode: 'no-cors', 
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(payload)
+                     });
+                     // NOTA: Con 'no-cors', la respuesta no es directamente usable,
+                     // asumimos éxito si no hay error de red.
+                     if (options.showOverlay) await simulateProgress(1.0);
+                     if (options.showOverlay) showOverlay(false);
+                     if (options.clearOnSuccess) {
+                         localStorage.removeItem(LS_KEY);
+                     }
+                     if (!options.attemptNetworkOnly) {
+                         showMessage("¡Envío exitoso!", 'success');
+                         resetForm();
+                     }
+                 } catch (error) {
+                     if (options.showOverlay) showOverlay(false);
+                     console.error('Error al enviar:', error);
+                     if (!options.attemptNetworkOnly) {
+                         pushPendingSubmission(payload); 
+                         showMessage("Error de envío. Datos guardados localmente.", 'error');
+                     } else {
+                         showMessage(`Reintento falló para ${data.kitCode}.`, 'error');
+                         throw error; 
+                     }
+                 }
+            }
+
+            function simulateProgress(target = 1.0) { 
+                return new Promise(resolve => {
+                    if (dom.progressBar) {
+                        dom.progressBar.style.width = `${target * 100}%`;
+                    }
+                    setTimeout(resolve, 350); // Simular tiempo
+                });
+            }
+            
+            /**********************
+             * Campos dinámicos de Responsable (Sin cambios)
+             **********************/
+              function mostrarCampos() {
+                  const tipo = (dom.tipoCargo.value || '').toString().trim().toUpperCase();
+                  const contenedor = dom.camposDinamicos;
+                  contenedor.innerHTML = ""; 
+                  if (!tipo) { updateLocalSummary(); return; }
+
+                  // Añadir asteriscos a los labels aquí
+                  const bloqueResponsable = `
+                       <div class="form-group full-width-field" id="responsable-block">
+                           <label for="nombreResponsable">RESPONSABLE DEL CARGO:*</label> 
+                           <div class="responsable-group">
+                               <select id="tipoResponsable" required>
+                                   <option value="728">728</option>
+                                   <option value="276">276</option>
+                                   <option value="CAS">CAS</option>
+                               </select>
+                               <input type="text" id="nombreResponsable" placeholder="Nombre Asignado" required />
+                           </div>
+                       </div>`;
+                  const bloqueUsuarioFinal = `
+                       <div class="form-group full-width-field" id="usuario-final-block">
+                           <label for="usuarioFinalName">USUARIO FINAL DEL EQUIPO (TITULAR):*</label> 
+                           <input type="text" id="usuarioFinalName" placeholder="Llenar nombre del usuario final" required />
+                       </div>`;
+
+                  const isUserFinalRequired = (tipo === "VOL" || tipo === "TER" || tipo === "SEC");
+                  let htmlContent = bloqueResponsable;
+                  if (isUserFinalRequired) { 
+                      htmlContent += bloqueUsuarioFinal; 
+                      contenedor.classList.add('stacked'); 
+                  } else {
+                      contenedor.classList.remove('stacked');
+                  }
+                  contenedor.innerHTML = htmlContent; 
+
+                  // Listeners para autosave y summary (la validación se dispara al agregar/enviar)
+                  const nombreRespInput = document.getElementById('nombreResponsable');
+                  const usuarioFinalInput = document.getElementById('usuarioFinalName');
+                  const tipoRespSelect = document.getElementById('tipoResponsable');
+
+                  if (nombreRespInput) nombreRespInput.addEventListener('input', () => { updateLocalSummary(); autosave(); });
+                  if (usuarioFinalInput) usuarioFinalInput.addEventListener('input', () => { updateLocalSummary(); autosave(); });
+                  if (tipoRespSelect) tipoRespSelect.addEventListener('change', () => { updateLocalSummary(); autosave(); });
+
+                  updateLocalSummary();
+              }
+
+            /**********************
+             * Resumen local y UI de componentes (Sin cambios)
+             **********************/
+            function updateLocalSummary() { 
+                const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
+                const nombreResponsableInput = document.getElementById('nombreResponsable');
+                let titularName = "PENDIENTE";
+                if (usuarioFinalNameInput && usuarioFinalNameInput.value) titularName = usuarioFinalNameInput.value.toUpperCase().trim();
+                else if (nombreResponsableInput && nombreResponsableInput.value) titularName = nombreResponsableInput.value.toUpperCase().trim();
+
+                const componentesResumenLista = document.getElementById('componentesResumenLista');
+
+                if (state.componentes.length > 0) {
+                    dom.resumenKit.style.display = "block";
+                    dom.kitFinal.textContent = `${dom.codigoKitUsuario.value} - ${titularName}`;
+                    
+                    componentesResumenLista.innerHTML = state.componentes.map(c => {
+                        let parts = [`<strong>[${c.tipo.toUpperCase()}]</strong>`];
+                        if (c.codigoKitComp) parts.push(`${c.codigoKitComp}:`);
+                        let details = [];
+                        if (c.ip) details.push(`IP: ${c.ip}`);
+                        if (c.marca && c.modelo) details.push(`${c.marca} ${c.modelo}`);
+                        if (c.patrimonial) details.push(`Patr: ${c.patrimonial}`); // Acortado
+                        if (details.length > 0) {
+                            parts.push(`<span style="font-style:italic;">${details.join(' | ')}</span>`);
+                        }
+                        if (c.marguesi) parts.push(`(CB: ${c.marguesi})`); // CB = Código Barras
+                        if (c.nro_serie) parts.push(`(SN: ${c.nro_serie})`);
+                        return `<li style="margin-bottom:6px;border-bottom:1px dotted #ccc;padding-bottom:4px;font-size:0.9em;">${parts.join(' ')}</li>`; // Fuente más pequeña
+                    }).join('');
+                } else {
+                    dom.resumenKit.style.display = "none";
+                    componentesResumenLista.innerHTML = '';
+                }
+             }
+
+            function refreshComponentList() {
+                 dom.listaComponentes.innerHTML = '';
+                 for (const c of state.componentes) {
+                     const li = document.createElement('li');
+                     let parts = [`[${c.tipo.toUpperCase()}]`];
+                     if (c.codigoKitComp) parts.push(`${c.codigoKitComp}`);
+                     if (c.ip) parts.push(`IP: ${c.ip}`);
+                     if (c.patrimonial) parts.push(`Patrimonial: ${c.patrimonial}`);
+                     if (c.marca) parts.push(`Marca: ${c.marca}`);
+                     if (c.modelo) parts.push(`Modelo: ${c.modelo}`);
+                     if (c.marguesi) parts.push(`Marguesi: ${c.marguesi}`);
+                     if (c.nro_serie) parts.push(`N° Serie: ${c.nro_serie}`);
+                     
+                     li.textContent = parts.join(' - ');
+                     dom.listaComponentes.appendChild(li);
+                 }
+            }
+            
+            // Mostrar formulario de componente
+            function mostrarFormulario(validateBefore = true) {
+                const tipoSeleccionado = dom.tipoComponente.value;
+                
+                // Validar info general SOLO si se intenta abrir un formulario de componente
+                if (validateBefore && tipoSeleccionado && !validateInfoFields()) {
+                    dom.tipoComponente.value = ""; // Resetear selección si info general falla
+                    dom.formularioComponente.style.display = "none";
+                    return;
+                }
+                
+                actualizarCamposPorTipo(tipoSeleccionado); 
+                
+                const tipo = dom.tipoComponente.value;
+                dom.formularioComponente.style.display = tipo ? "block" : "none";
+                
+                if (tipo) {
+                    const codigoKitUsuario = dom.codigoKitUsuario.value;
+                    // Asegurar que el KIT ID no sea el valor por defecto "Cargando..." o vacío
+                    if (!codigoKitUsuario || codigoKitUsuario === "Cargando...") {
+                         showMessage("Esperando asignación de Código de KIT...", "info");
+                         dom.tipoComponente.value = ""; // Resetear
+                         dom.formularioComponente.style.display = "none";
+                         return;
+                     }
+
+                    // (AÑADIDOS nuevos tipos a la lógica)
+                    const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking', 'ups', 'camaraweb', 'mouse'].includes(tipo); 
+
+                    dom.codigoKitCompContainer.style.display = isKitCompRequired ? "block" : "none";
+                    
+                    if (isKitCompRequired) {
+                        // Asegurarnos que el contador existe
+                        if (!state.contador[tipo]) state.contador[tipo] = 1; 
+                        const currentCount = state.contador[tipo];
+                        const autogen = `${codigoKitUsuario}-${tipo.toUpperCase()}-${String(currentCount).padStart(4, '0')}`;
+                        dom.codigoKitComp.value = autogen;
+                    } else {
+                        dom.codigoKitComp.value = ""; 
+                    }
+
+                    // Limpiar campos SIEMPRE al mostrar, excepto si es restauración (validateBefore=false)
+                    if (validateBefore) { 
+                        document.getElementById('ip') && (document.getElementById('ip').value = "");
+                        document.getElementById('patrimonial') && (document.getElementById('patrimonial').value = "");
+                        dom.marguesi.value = "";
+                        dom.nro_serie.value = "";
+                        dom.marca.value = "";
+                        dom.modelo.value = "";
+                    }
+
+                    stopScanning(false); // Detener escaneo si estaba activo
                 }
             }
 
-            // Util: normalizar código (trim, quitar espacios y caracteres no alfanum)
-            function normalizeCode(raw) {
-                if (!raw) return '';
-                return raw.toString().trim().replace(/[^A-Z0-9]/ig, '').toUpperCase();
+            // Agregar componente (AÑADIDOS nuevos tipos a la lógica)
+            function agregarComponente() {
+                 if (!validateInfoFields()) return; // Validar info general
+                 const tipo = dom.tipoComponente.value;
+                 if (!tipo) { 
+                     showMessage("Seleccione un Tipo de Componente.", 'error');
+                     animateAndFocusInvalid(dom.tipoComponente);
+                     return; 
+                 }
+                 if (!validateComponentFields(tipo)) return; // Validar campos componente
+                 
+                 const marguesi = (dom.marguesi.value || '').toUpperCase().trim();
+                 const nroSerie = (dom.nro_serie.value || '').toUpperCase().trim();
+                 const marca = (dom.marca.value || '').toUpperCase().trim();
+                 const modelo = (dom.modelo.value || '').toUpperCase().trim();
+                 const ip = (document.getElementById('ip') || {}).value || '';
+                 const patrimonial = (document.getElementById('patrimonial') || {}).value || '';
+
+                 let codigoKitComp = "SIN-KIT";
+                 const isKitCompRequired = ['cpu', 'monitor', 'teclado', 'laptop', 'docking', 'ups', 'camaraweb', 'mouse'].includes(tipo);
+                 if (isKitCompRequired) {
+                     codigoKitComp = dom.codigoKitComp.value; // Ya se generó al mostrar
+                     // Incrementar contador DESPUÉS de agregar
+                 } 
+                 
+                 // Componente final
+                 state.componentes.push({ 
+                     tipo, 
+                     marguesi: marguesi, 
+                     nro_serie: nroSerie, 
+                     marca: marca, 
+                     modelo: modelo, 
+                     codigoKitComp: isKitCompRequired ? codigoKitComp : null, 
+                     ip: ip || null,
+                     patrimonial: patrimonial || null
+                 });
+
+                 // Incrementar contador ahora
+                 if (isKitCompRequired) {
+                     state.contador[tipo] = (state.contador[tipo] || 1) + 1;
+                 }
+                 
+                 refreshComponentList();
+                 updateLocalSummary();
+                 showMessage(`Componente ${tipo.toUpperCase()} agregado.`, 'success');
+                 beep(0.06, 880, 0.06);
+                 
+                 autosave();
+                 dom.tipoComponente.value = ""; // Resetear selector
+                 mostrarFormulario(false); // Ocultar formulario sin validar
             }
 
-            // Comprueba si el código cumple formato corporativo (12 alfanum)
-            function isValidCorporateCode(code) {
-                return PRO_CODE_REGEX.test(code) && code.length === PRO_MIN_LENGTH;
+            // Reset Form (AÑADIDO defaultContador actualizado)
+            function resetForm() {
+                 const allInputs = document.querySelectorAll('input[type="text"]:not([readonly]), select');
+                 allInputs.forEach(input => { 
+                     if (input.id === 'tipoResponsable') return; // No resetear este select
+                     if (input.tagName === 'SELECT') input.value = ''; 
+                     else input.value = ''; 
+                     input.removeAttribute('aria-invalid');
+                     input.classList.remove('input-invalid');
+                     clearFieldError(input);
+                 });
+                 dom.anexoKit && (dom.anexoKit.value = ''); // Limpiar anexo general
+
+                 dom.listaComponentes.innerHTML = "";
+                 state.componentes = [];
+                 // Resetear contadores
+                 const defaultContador = { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1, ups: 1, camaraweb: 1, mouse: 1 };
+                 state.contador = { ...defaultContador }; 
+
+                 dom.tipoCargo.value = '';
+                 mostrarCampos(); // Limpiar campos dinámicos
+                 dom.resumenKit.style.display = "none";
+                 dom.formularioComponente.style.display = "none";
+                 localStorage.removeItem(LS_KEY); // Limpiar autosave
+                 
+                 // Obtener el siguiente ID para el nuevo formulario
+                 dom.codigoKitUsuario.value = "Cargando..."; // Indicar carga
+                 getNewKitCode(); 
             }
 
-            // Configuración avanzada para facing
+            // Enviar Formulario (Sin cambios)
+            function enviarFormulario() {
+                 if (!validateInfoFields()) return; // Validar info general
+                 if (state.componentes.length === 0) { 
+                     showMessage("Debe agregar al menos un componente.", 'error');
+                     // Enfocar el selector de componentes como indicación
+                     animateAndFocusInvalid(dom.tipoComponente); 
+                     return; 
+                 }
+                 
+                 const tipoResponsableInput = document.getElementById('tipoResponsable');
+                 const nombreResponsableInput = document.getElementById('nombreResponsable');
+                 const usuarioFinalNameInput = document.getElementById('usuarioFinalName');
+                 const nombreResponsable = nombreResponsableInput ? nombreResponsableInput.value.toUpperCase().trim() : "";
+                 const nombreUsuarioFinal = (usuarioFinalNameInput && usuarioFinalNameInput.value) ? usuarioFinalNameInput.value.toUpperCase().trim() : nombreResponsable;
+                 
+                 const submissionData = {
+                     kitCode: dom.codigoKitUsuario.value, 
+                     estado: dom.estado.options[dom.estado.selectedIndex].value,
+                     tecnico: dom.tecnicoResponsable.options[dom.tecnicoResponsable.selectedIndex].text,
+                     sede: dom.sede.options[dom.sede.selectedIndex].text,
+                     dependencia: dom.dependencia.options[dom.dependencia.selectedIndex].text,
+                     anexoKit: (dom.anexoKit || {}).value || '', // Anexo general
+                     tipoCargo: dom.tipoCargo.options[dom.tipoCargo.selectedIndex].text,
+                     responsableTipo: tipoResponsableInput ? tipoResponsableInput.value : "N/A",
+                     responsableNombre: nombreResponsable,
+                     usuarioFinal: nombreUsuarioFinal,
+                     components: state.componentes
+                 };
+
+                 sendDataToSheet(submissionData, { showOverlay: true, clearOnSuccess: true, attemptNetworkOnly: false });
+            }
+
+            /**********************
+             * Obtener nuevo KIT ID (Sin cambios)
+             **********************/
+            
+            async function getNewKitCode() { 
+                let finalKitCode = "KIT-0001"; // Fallback inicial
+                try {
+                    dom.codigoKitUsuario.value = "Cargando..."; // Mostrar carga
+                    showMessage("Obteniendo ID de KIT...", 'info');
+                    const response = await fetch(SHEET_URL); // Llama al doGet
+                    if (!response.ok) {
+                        // Intentar leer el cuerpo del error si es posible
+                        let errorBody = "Error de red";
+                        try { errorBody = await response.text(); } catch(_) {}
+                        throw new Error(`Error ${response.status}: ${response.statusText} - ${errorBody}`);
+                    }
+                    const data = await response.json();
+                    if (data.result === "success" && data.nextKitCode) {
+                        finalKitCode = data.nextKitCode;
+                        showMessage(`ID de KIT asignado: ${finalKitCode}`, 'success');
+                    } else {
+                        throw new Error(data.message || "Respuesta inválida del script");
+                    }
+                } catch (error) {
+                    console.error('Error al obtener el nuevo KIT ID:', error);
+                    // Mostrar error específico de CORS si aplica (heurística)
+                    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                         showMessage("Error de conexión (CORS?). Usando ID por defecto.", 'error');
+                    } else {
+                         showMessage(`Error al obtener ID: ${error.message}. Usando ID por defecto.`, 'error');
+                    }
+                    // Mantener el fallback
+                    finalKitCode = "KIT-0001"; 
+                } finally {
+                    // Asigna el valor final (nuevo o fallback) y restaura autosave DESPUÉS
+                    dom.codigoKitUsuario.value = finalKitCode;
+                    // Llamar a restoreAutosave DESPUÉS de obtener el ID
+                    restoreAutosave(); 
+                }
+            }
+            
+            // Actualizar campos por tipo (AÑADIDOS nuevos tipos a la lógica)
+             function actualizarCamposPorTipo(tipo) {
+                 const ipGroup = document.getElementById('ip-group');
+                 const marguesiGroup = document.getElementById('marguesi-group');
+                 const patrimonialGroup = document.getElementById('patrimonial-group');
+                 const marcaGroup = document.getElementById('marca-group');
+                 const modeloGroup = document.getElementById('modelo-group');
+                 const nroSerieGroup = document.getElementById('nro_serie-group');
+
+                 const isCPUOrLaptop = ['cpu', 'laptop'].includes(tipo);
+                 // (AÑADIDOS nuevos tipos a la lógica)
+                 const isPeriferico = ['fotocopiadora', 'impresora', 'escaner', 'ups', 'camaraweb'].includes(tipo);
+                 
+                 const mostrarIP = isCPUOrLaptop || isPeriferico;
+                 ipGroup.style.display = mostrarIP ? 'block' : 'none';
+
+                 // Campos estándar se muestran siempre que haya un tipo
+                 const mostrarCamposEstandar = tipo !== ''; 
+                 marguesiGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                 patrimonialGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                 marcaGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                 modeloGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                 nroSerieGroup.style.display = mostrarCamposEstandar ? 'block' : 'none';
+                 
+                 // Limpiar errores visualmente
+                 [document.getElementById('ip'), dom.marguesi, document.getElementById('patrimonial'), dom.marca, dom.modelo, dom.nro_serie]
+                     .filter(Boolean)
+                     .forEach(el => {
+                         el.removeAttribute('aria-invalid');
+                         el.classList.remove('input-invalid');
+                         clearFieldError(el);
+                         if (el.id === 'marguesi' && el.parentElement.classList.contains('input-with-button')) {
+                            el.parentElement.classList.remove('input-invalid');
+                         }
+                     });
+             }
+
+            // ***************************************************************
+            // * IMPLEMENTACIÓN DE QUAGGAJS (CÁMARA Y ESCÁNER)
+            // ***************************************************************
+
+            // --- 1. Configuración de Quagga ---
             function quaggaConfigForFacing(facingMode) {
                 return {
                     inputStream: {
                         type: "LiveStream",
                         target: dom.videoContainer,
                         constraints: {
-                            width: { ideal: 1920 },
-                            height: { ideal: 1080 },
+                            width: { min: 640 },
+                            height: { min: 480 },
                             facingMode: facingMode,
-                            aspectRatio: { min: 1, max: 2 },
-                            // advanced: [{ torch: true }, { exposureMode: 'continuous' }] // aplicado después si es posible
+                            aspectRatio: { min: 1, max: 2 }
                         },
                     },
                     locator: {
-                        patchSize: "large",     // mejor para códigos borrosos
-                        halfSample: false,      // mantener calidad total
+                        patchSize: "medium",
+                        halfSample: true,
                     },
                     decoder: {
-                        // SOLO Code128: reduce falsos positivos en Android
+                        // Lista de códigos de barras a detectar. 'code_128' y 'ean' son comunes.
                         readers: [
-                            "code_128_reader"
+                            "code_128_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_39_reader",
+                            "code_39_vin_reader",
+                            "codabar_reader",
+                            "upc_reader",
+                            "upc_e_reader"
                         ],
                         debug: {
                             drawBoundingBox: true,
-                            showFrequency: false,
+                            showFrequency: true,
                             drawScanline: true,
-                            showPattern: false
-                        },
-                        multiple: false
+                            showPattern: true
+                        }
                     },
-                    locate: true,
-                    numOfWorkers: Math.max(2, (navigator.hardwareConcurrency || 4) - 1),
-                    frequency: 20 // frames per second processing target (bajar si CPU baja)
+                    locate: true, // Intentar localizar el código de barras
+                    numOfWorkers: navigator.hardwareConcurrency || 4, // Usar 4 workers o los núcleos disponibles
                 };
             }
-
-            // Callback robusto que requiere repeticiones iguales y chequeos de confianza
+            
+            // --- 2. Función de Detección (Callback) ---
             function onQuaggaDetected(data) {
-                try {
-                    if (!data || !data.codeResult || !data.codeResult.code) return;
+                // 'Debounce' - Evitar múltiples detecciones del mismo código
+                const now = Date.now();
+                if (now - state.lastScanTimestamp < 1500) { // Cooldown de 1.5 segundos
+                    return;
+                }
+                
+                if (data && data.codeResult && data.codeResult.code) {
+                    state.lastScanTimestamp = now;
+                    console.log("Código detectado:", data.codeResult.code);
 
-                    const now = Date.now();
-                    // Cooldown para prevenir floods
-                    if (now - state.lastScanTimestamp < 350) {
-                        // permitir cierta frecuencia (más agresivo porque validamos repeticiones)
+                    beep(0.08, 900, 0.08); // Sonido de éxito
+                    flashFrame(); // Feedback visual
+
+                    if (state.activeInput) {
+                        state.activeInput.value = data.codeResult.code;
+                        // Disparar evento 'input' para que autosave() lo detecte
+                        state.activeInput.dispatchEvent(new Event('input', { bubbles: true }));
                     }
 
-                    // Sumar errores reportados por decodedCodes (si existen)
-                    let errorSum = 0;
-                    if (Array.isArray(data.codeResult.decodedCodes)) {
-                        errorSum = data.codeResult.decodedCodes.reduce((acc, d) => acc + (d && d.error ? d.error : 0), 0);
+                    // Limpiar error visual si lo tenía
+                    if(state.activeInput && state.activeInput.parentElement.classList.contains('input-with-button')) {
+                        state.activeInput.parentElement.classList.remove('input-invalid');
                     }
 
-                    // Tomar y normalizar el código
-                    const raw = data.codeResult.code || '';
-                    const norm = normalizeCode(raw);
-
-                    // Rechazar si no tiene la longitud esperada (evita muchos falsos)
-                    if (norm.length !== PRO_MIN_LENGTH) {
-                        console.log('Rechazado por longitud:', norm);
-                        return;
-                    }
-
-                    // Rechazar si no cumple el patrón alfanumérico (corporate)
-                    if (!isValidCorporateCode(norm)) {
-                        console.log('Rechazado por patrón:', norm);
-                        return;
-                    }
-
-                    // Rechazar si el error interno es demasiado alto
-                    if (errorSum > PRO_ERROR_THRESHOLD) {
-                        console.log('Rechazado por baja confianza interna (errorSum):', errorSum, norm);
-                        return;
-                    }
-
-                    // Buffer de últimos códigos
-                    _pro_lastCodes.push(norm);
-                    if (_pro_lastCodes.length > PRO_MAX_BUFFER) _pro_lastCodes.shift();
-
-                    // Contar repeticiones del código actual en buffer
-                    const reps = _pro_lastCodes.filter(x => x === norm).length;
-
-                    console.log(`Detected candidate: ${norm} (reps: ${reps}, err:${errorSum})`);
-
-                    // Requiere N repeticiones iguales para aceptar (robustez SAP-level)
-                    if (reps >= PRO_REQUIRED_REPETITIONS) {
-                        // Éxito: limpiar buffer y reportar
-                        _pro_lastCodes = [];
-
-                        state.lastScanTimestamp = Date.now();
-                        beep(0.08, 900, 0.08);
-                        flashFrame();
-
-                        if (state.activeInput) {
-                            state.activeInput.value = norm;
-                            state.activeInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-
-                        if (state.activeInput && state.activeInput.parentElement && state.activeInput.parentElement.classList.contains('input-with-button')) {
-                            state.activeInput.parentElement.classList.remove('input-invalid');
-                        }
-
-                        stopScanning(false);
-                        showMessage("Código patrimonial escaneado correctamente.", 'success');
-                    }
-                } catch (e) {
-                    console.error('onQuaggaDetected PROC error', e);
+                    stopScanning(false); // Detener escáner (false = no mostrar botón 'retry')
+                    showMessage("Código escaneado.", 'success');
                 }
             }
 
-            // Procesado visual (mantener)
+            // --- 3. Función de Procesamiento (Dibuja los cuadros en el canvas) ---
             function onQuaggaProcessed(result) {
-                const drawingCtx = Quagga.canvas && Quagga.canvas.ctx && Quagga.canvas.ctx.overlay;
-                const drawingCanvas = Quagga.canvas && Quagga.canvas.dom && Quagga.canvas.dom.overlay;
+                const drawingCtx = Quagga.canvas.ctx.overlay;
+                const drawingCanvas = Quagga.canvas.dom.overlay;
 
                 if (drawingCtx && drawingCanvas) {
-                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")||0), parseInt(drawingCanvas.getAttribute("height")||0));
-
+                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                    
                     if (result) {
+                        // Dibuja los cuadros delimitadores
                         if (result.boxes) {
                             result.boxes.filter(box => box !== result.box).forEach(box => {
-                                Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "rgba(0,255,0,0.35)", lineWidth: 2 });
+                                Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
                             });
                         }
+                        // Dibuja el cuadro del código detectado
                         if (result.box) {
                             Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
                         }
-                        if (result.codeResult && result.codeResult.code && result.line) {
+                        // Dibuja la línea del código
+                        if (result.codeResult && result.codeResult.code) {
                             Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
                         }
                     }
                 }
             }
 
-            // Iniciar escaneo (con mejoras pro)
+
+            // --- 4. Iniciar Escáner ---
             function startScanning() {
                 if (state.scanning) return;
-
+                
+                // Verificar permisos de cámara (buena práctica)
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     showMessage("Tu navegador no soporta el acceso a la cámara.", 'error');
                     return;
                 }
-
+                
                 state.scanning = true;
                 dom.videoContainer.style.display = "block";
                 dom.retryBtn.style.display = "none";
-                dom.toggleTorchBtn.style.display = 'none';
+                dom.toggleTorchBtn.style.display = 'none'; // Ocultar hasta saber si está disponible
 
                 const config = quaggaConfigForFacing(state.currentFacingMode);
 
@@ -876,210 +1409,195 @@ function actualizarCamposPorTipo(tipo){ const ipGroup=document.getElementById('i
                     if (err) {
                         console.error("Error al iniciar Quagga:", err);
                         showMessage(`Error de cámara: ${err.message}`, 'error');
-                        stopScanning(true);
+                        stopScanning(true); // Mostrar 'retry'
                         return;
                     }
-                    console.log("Quagga iniciado (PRO).");
-
-                    // Intentar aplicar constraints pro en el track
+                    console.log("Quagga iniciado correctamente.");
+                    
+                    // Verificar capacidad de la linterna (torch)
                     try {
-                        await applyProCameraConstraints();
-                        startPeriodicRefocus();
-                    } catch(e){
-                        console.warn('applyProCameraConstraints failed', e);
-                    }
-
-                    // Verificar linterna
-                    try {
-                        const track = Quagga.CameraAccess.getActiveTrack();
-                        const capabilities = track && track.getCapabilities ? track.getCapabilities() : {};
+                        const capabilities = Quagga.CameraAccess.getActiveTrack().getCapabilities();
                         if (capabilities && capabilities.torch) {
                             state.torchAvailable = true;
                             dom.toggleTorchBtn.style.display = 'inline-block';
-                        } else {
-                            state.torchAvailable = false;
                         }
                     } catch (e) {
+                        console.warn("No se pudo acceder a las capacidades de la linterna.", e);
                         state.torchAvailable = false;
                     }
 
                     Quagga.start();
-
-                    // Registrar listeners pro (reemplazar listeners previos)
-                    Quagga.offDetected && Quagga.offDetected(onQuaggaDetected);
-                    Quagga.offProcessed && Quagga.offProcessed(onQuaggaProcessed);
+                    
+                    // Registrar listeners
                     Quagga.onDetected(onQuaggaDetected);
                     Quagga.onProcessed(onQuaggaProcessed);
                 });
             }
 
-            // Detener escaneo (limpieza pro)
+            // --- 5. Detener Escáner ---
             function stopScanning(showRetry = true) {
-                if (!state.scanning && !(Quagga.CameraAccess && Quagga.CameraAccess.getActiveTrack && Quagga.CameraAccess.getActiveTrack())) return;
-
-                console.log("Deteniendo escáner (PRO)...");
+                if (!state.scanning && !Quagga.CameraAccess.getActiveTrack()) return; // Ya está detenido
+                
+                console.log("Deteniendo escáner...");
                 state.scanning = false;
+                
                 try {
                     Quagga.stop();
-                } catch(e) { console.warn("Quagga.stop failed", e); }
-
-                try {
-                    Quagga.offDetected && Quagga.offDetected(onQuaggaDetected);
-                    Quagga.offProcessed && Quagga.offProcessed(onQuaggaProcessed);
-                } catch(e){}
-
-                stopPeriodicRefocus();
+                } catch(e) {
+                    console.warn("Error al detener Quagga (puede ser normal si no estaba iniciado):", e);
+                }
+                
+                // Quitar listeners
+                Quagga.offDetected(onQuaggaDetected);
+                Quagga.offProcessed(onQuaggaProcessed);
 
                 dom.videoContainer.style.display = "none";
                 dom.retryBtn.style.display = showRetry ? "block" : "none";
-                state.lastScanTimestamp = 0;
-                _pro_lastCodes = [];
+                state.lastScanTimestamp = 0; // Resetear el cooldown
             }
 
-            // Cambiar cámara (mantener)
+            // --- 6. Cambiar Cámara ---
             function switchCamera() {
                 if (state.scanning) {
+                    // Detener el stream actual antes de cambiar
                     stopScanning(false);
+                    // Cambiar el modo
                     state.currentFacingMode = (state.currentFacingMode === 'environment') ? 'user' : 'environment';
-                    setTimeout(startScanning, 150);
+                    // Reiniciar
+                    setTimeout(startScanning, 100); // Dar un respiro al navegador
                 }
             }
 
-            // Toggle torch (más robusto)
+            // --- 7. Activar/Desactivar Linterna ---
             async function toggleTorch() {
                 if (!state.torchAvailable || !state.scanning) return;
+
                 try {
                     const track = Quagga.CameraAccess.getActiveTrack();
-                    if (!track) return;
-                    const currentConstraints = track.getConstraints();
-                    const isTorchOn = !!(currentConstraints.advanced && currentConstraints.advanced.find(c => c.torch)?.torch);
-                    await track.applyConstraints({ advanced: [{ torch: !isTorchOn }] });
+                    const capabilities = track.getCapabilities();
+
+                    if (capabilities.torch) {
+                        // Obtener el estado actual (un poco complejo)
+                        const currentConstraints = track.getConstraints();
+                        const isTorchOn = !!(currentConstraints.advanced && currentConstraints.advanced.find(c => c.torch)?.torch);
+                        
+                        await track.applyConstraints({
+                            advanced: [{ torch: !isTorchOn }]
+                        });
+                        console.log("Linterna cambiada a:", !isTorchOn);
+                    }
                 } catch (err) {
-                    console.error('Error al cambiar la linterna (PRO):', err);
+                    console.error('Error al cambiar la linterna:', err);
                 }
             }
 
             // ***************************************************************
-            // * FIN IMPLEMENTACIÓN QUAGGAJS - VERSIÓN PRO
+            // * FIN IMPLEMENTACIÓN QUAGGAJS
             // ***************************************************************
 
-/* ---------------------------
-   Inicialización y listeners
-   ---------------------------*/
-function validateInfoFields(){
-    const nombreResponsableInput = document.getElementById('nombreResponsable');
-    const tipoResponsableInput = document.getElementById('tipoResponsable');
-    const anexoKitInput = dom.anexoKit;
-    const infoInputs = [dom.tecnicoResponsable, dom.sede, dom.dependencia, dom.tipoCargo, dom.estado].filter(Boolean);
-    let firstInvalidElement = null;
-    for (const input of infoInputs) {
-        const value = (input.value || '').toString().trim();
-        if (value === '' || value === 'Seleccione...' || value === '-- Seleccionar --') {
-            animateAndFocusInvalid(input);
-            if (!firstInvalidElement) firstInvalidElement = input;
-        } else {
-            input.removeAttribute('aria-invalid'); input.classList.remove('input-invalid'); clearFieldError(input);
-        }
-    }
-    if (anexoKitInput && anexoKitInput.value.trim() && !/^\d{5}$/.test(anexoKitInput.value.trim())) {
-        animateAndFocusInvalid(anexoKitInput);
-        showFieldError(anexoKitInput, "Anexo debe ser exactamente 5 dígitos.");
-        if (!firstInvalidElement) firstInvalidElement = anexoKitInput;
-    } else if (anexoKitInput) { anexoKitInput.removeAttribute('aria-invalid'); anexoKitInput.classList.remove('input-invalid'); clearFieldError(anexoKitInput); }
-    let dynamicValid = true;
-    if (nombreResponsableInput && !nombreResponsableInput.value.trim()) { animateAndFocusInvalid(nombreResponsableInput); if (!firstInvalidElement) firstInvalidElement = nombreResponsableInput; dynamicValid = false; } else if (nombreResponsableInput) { nombreResponsableInput.removeAttribute('aria-invalid'); nombreResponsableInput.classList.remove('input-invalid'); clearFieldError(nombreResponsableInput); }
-    if (tipoResponsableInput && !tipoResponsableInput.value.trim()) { animateAndFocusInvalid(tipoResponsableInput); if (!firstInvalidElement) firstInvalidElement = tipoResponsableInput; dynamicValid = false; } else if (tipoResponsableInput) { tipoResponsableInput.removeAttribute('aria-invalid'); tipoResponsableInput.classList.remove('input-invalid'); clearFieldError(tipoResponsableInput); }
-    const tipoCargo = dom.tipoCargo.value;
-    const isUserFinalRequired = (tipoCargo === "VOL" || tipoCargo === "TER" || tipoCargo === "SEC");
-    if (isUserFinalRequired) {
-        const usuarioFinalInput = document.getElementById('usuarioFinalName');
-        if (usuarioFinalInput && !usuarioFinalInput.value.trim()) { animateAndFocusInvalid(usuarioFinalInput); if (!firstInvalidElement) firstInvalidElement = usuarioFinalInput; dynamicValid = false; } else if (usuarioFinalInput) { usuarioFinalInput.removeAttribute('aria-invalid'); usuarioFinalInput.classList.remove('input-invalid'); clearFieldError(usuarioFinalInput); }
-    }
-    const isValid = !firstInvalidElement && dynamicValid;
-    if (!isValid) {
-        if (!firstInvalidElement || firstInvalidElement.id !== 'anexoKit') showMessage("Por favor, complete campos obligatorios (*).",'error');
-    }
-    return isValid;
-}
 
-function validateComponentFields(tipo) {
-    const ip = document.getElementById('ip');
-    const marguesi = dom.marguesi;
-    const nroSerie = dom.nro_serie;
-    const marca = dom.marca;
-    const modelo = dom.modelo;
-    let isValid = true;
-    let firstInvalidElement = null;
-    if (!marguesi || !marguesi.value.trim()) { isValid = false; if (!firstInvalidElement) firstInvalidElement = marguesi; }
-    if (!marca || !marca.value.trim()) { isValid = false; if (!firstInvalidElement) firstInvalidElement = marca; }
-    if (!modelo || !modelo.value.trim()) { isValid = false; if (!firstInvalidElement) firstInvalidElement = modelo; }
-    if (!nroSerie || !nroSerie.value.trim()) { isValid = false; if (!firstInvalidElement) firstInvalidElement = nroSerie; }
-    [marguesi, marca, modelo, nroSerie].filter(Boolean).forEach(el=>{
-        if (!el.value.trim()) { animateAndFocusInvalid(el); if (el.id==='marguesi' && el.parentElement.classList.contains('input-with-button')) el.parentElement.classList.add('input-invalid'); }
-        else { el.removeAttribute('aria-invalid'); el.classList.remove('input-invalid'); clearFieldError(el); if (el.id==='marguesi' && el.parentElement.classList.contains('input-with-button')) el.parentElement.classList.remove('input-invalid'); }
-    });
-    if (ip) { ip.removeAttribute('aria-invalid'); ip.classList.remove('input-invalid'); clearFieldError(ip); }
-    if (!isValid) showMessage("Por favor, complete los campos (*) del componente.", 'error');
-    return isValid;
-}
+            /**********************
+             * Inicialización y listeners (Sin cambios)
+             **********************/
+            function initApp() {
+                // Asignar refs principales
+                dom.tecnicoResponsable = document.getElementById("tecnicoResponsable");
+                dom.sede = document.getElementById("sede");
+                dom.dependencia = document.getElementById("dependencia");
+                dom.estado = document.getElementById("estado");
+                dom.anexoKit = document.getElementById("anexoKit"); // Ref anexo general
+                
+                // 1. Obtener KIT ID (esto ahora también llama a restoreAutosave al final)
+                getNewKitCode(); 
+                
+                // Listeners
+                // Listener para Anexo General (validación y autosave)
+                 dom.anexoKit.addEventListener('input', () => { 
+                     autosave();
+                     // Si el campo tenía error y ahora cumple (o está vacío), limpiar error
+                     if (dom.anexoKit.hasAttribute('aria-invalid') && 
+                         (!dom.anexoKit.value.trim() || /^\d{5}$/.test(dom.anexoKit.value.trim()))) {
+                         
+                         dom.anexoKit.removeAttribute('aria-invalid');
+                         dom.anexoKit.classList.remove('input-invalid');
+                         clearFieldError(dom.anexoKit);
+                     }
+                 });
 
-/* Pending submissions helpers */
-function pushPendingSubmission(submission) {
-    try {
-        const raw = localStorage.getItem(LS_PENDING_SUBMISSIONS);
-        const arr = raw ? JSON.parse(raw) : [];
-        arr.push({ submission, timestamp: Date.now() });
-        localStorage.setItem(LS_PENDING_SUBMISSIONS, JSON.stringify(arr));
-    } catch(e){ console.warn('pushPendingSubmission', e); }
-}
-async function retryPendingSubmissions() {
-    try {
-        const raw = localStorage.getItem(LS_PENDING_SUBMISSIONS);
-        if (!raw) return;
-        let arr = JSON.parse(raw);
-        if (!arr || !arr.length) return;
-        showMessage(`Reintentando ${arr.length} envíos pendientes...`, 'info');
-        let successCount = 0; const failedItems = [];
-        for (const item of arr) {
-            try { await sendDataToSheet(item.submission, { showOverlay:false, clearOnSuccess:false, attemptNetworkOnly:true }); successCount++; }
-            catch(e){ console.warn('Pending send failed', e); failedItems.push(item); }
-        }
-        if (failedItems.length === 0) { localStorage.removeItem(LS_PENDING_SUBMISSIONS); if (successCount>0) showMessage("Envíos pendientes procesados.", 'success'); else dom.messageBox.style.display='none'; }
-        else { localStorage.setItem(LS_PENDING_SUBMISSIONS, JSON.stringify(failedItems)); showMessage(`${failedItems.length} envíos aún pendientes.`,'error'); }
-    } catch(e){ console.warn('retryPendingSubmissions', e); }
-}
+                // Listeners para selects generales (solo autosave)
+                dom.tecnicoResponsable.addEventListener('change', autosave);
+                dom.sede.addEventListener('change', autosave);
+                dom.dependencia.addEventListener('change', autosave);
+                dom.estado.addEventListener('change', autosave);
+                // Listener para Tipo Cargo (mostrar campos y autosave)
+                dom.tipoCargo.addEventListener('change', () => { 
+                    mostrarCampos(); 
+                    autosave(); 
+                 });
+                 
+                 // Listener para inputs de texto (Mayúsculas y autosave)
+                 document.querySelectorAll('input[type="text"]:not([readonly])').forEach(input => {
+                     // Excluir IP y Anexo General de mayúsculas
+                     if (input.id !== 'ip' && input.id !== 'anexoKit') { 
+                         input.addEventListener('input', () => {
+                             input.value = input.value.toUpperCase();
+                             autosave();
+                         });
+                     } else { 
+                         // Para IP y Anexo, solo autosave
+                         input.addEventListener('input', autosave);
+                     }
+                 });
+                 
+                 // Listeners botones escáner, retry, cámara
+                 document.querySelectorAll(".scan-btn").forEach(btn => {
+                     const inputId = btn.getAttribute('data-input-id');
+                     const input = document.getElementById(inputId);
+                     if (input && inputId === 'marguesi') { // Asegurar que sea el botón de marguesi
+                         btn.addEventListener("click", (e) => {
+                             e.preventDefault();
+                             state.activeInput = input; // Guardar el input asociado
+                             if (state.scanning) { 
+                                 stopScanning(true); 
+                             } else { 
+                                 dom.retryBtn.style.display = "none"; 
+                                 startScanning(); 
+                             }
+                         });
+                     } else if (input) {
+                         // Deshabilitar otros botones de escáner si existieran por error
+                         btn.disabled = true; 
+                     }
+                 });
+                 dom.retryBtn.addEventListener('click', (e) => {
+                      e.preventDefault();
+                      // Asegurarse que activeInput siga siendo el correcto
+                      if (state.activeInput && state.activeInput.id === 'marguesi') {
+                          startScanning();
+                      }
+                  });
+                 dom.switchCameraBtn && dom.switchCameraBtn.addEventListener('click', (e) => { e.preventDefault(); switchCamera(); }); 
+                 dom.toggleTorchBtn && dom.toggleTorchBtn.addEventListener('click', (e) => { e.preventDefault(); toggleTorch(); }); 
+                 
+                 // Reintentar envíos pendientes si hay conexión al cargar
+                 if (navigator.onLine) retryPendingSubmissions();
+                 
+                 // Autosave periódico
+                 setInterval(autosave, 5000);
+            }
 
-window.addEventListener('online', ()=>{ showMessage('Conexión restablecida.','info'); retryPendingSubmissions(); });
+            // Ejecutar init al cargar el DOM
+            document.addEventListener('DOMContentLoaded', initApp);
 
-/* Init & listeners */
-function initApp(){
-    dom.tecnicoResponsable = document.getElementById("tecnicoResponsable");
-    dom.sede = document.getElementById("sede");
-    dom.dependencia = document.getElementById("dependencia");
-    dom.estado = document.getElementById("estado");
-    dom.anexoKit = document.getElementById("anexoKit");
-    getNewKitCode();
-    dom.anexoKit.addEventListener('input', ()=>{ autosave(); if (dom.anexoKit.hasAttribute('aria-invalid') && (!dom.anexoKit.value.trim() || /^\d{5}$/.test(dom.anexoKit.value.trim()))) { dom.anexoKit.removeAttribute('aria-invalid'); dom.anexoKit.classList.remove('input-invalid'); clearFieldError(dom.anexoKit); } });
-    dom.tecnicoResponsable.addEventListener('change', autosave);
-    dom.sede.addEventListener('change', autosave);
-    dom.dependencia.addEventListener('change', autosave);
-    dom.estado.addEventListener('change', autosave);
-    dom.tipoCargo.addEventListener('change', ()=>{ mostrarCampos(); autosave(); });
-    document.querySelectorAll('input[type="text"]:not([readonly])').forEach(input=>{ if(input.id!=='ip' && input.id!=='anexoKit'){ input.addEventListener('input', ()=>{ input.value = input.value.toUpperCase(); autosave(); }); } else { input.addEventListener('input', autosave); } });
-    document.querySelectorAll(".scan-btn").forEach(btn=>{ const inputId = btn.getAttribute('data-input-id'); const input = document.getElementById(inputId); if (input && inputId === 'marguesi'){ btn.addEventListener('click', (e)=>{ e.preventDefault(); state.activeInput = input; if (state.scanning) stopScanning(true); else { dom.retryBtn.style.display='none'; startScanning(); } }); } else if (input) btn.disabled = true; });
-    dom.retryBtn.addEventListener('click',(e)=>{ e.preventDefault(); if (state.activeInput && state.activeInput.id === 'marguesi') startScanning(); });
-    dom.switchCameraBtn && dom.switchCameraBtn.addEventListener('click',(e)=>{ e.preventDefault(); switchCamera(); });
-    dom.toggleTorchBtn && dom.toggleTorchBtn.addEventListener('click',(e)=>{ e.preventDefault(); toggleTorch(); });
-    if (navigator.onLine) retryPendingSubmissions();
-    setInterval(autosave, 5000);
-}
-document.addEventListener('DOMContentLoaded', initApp);
-
-/* Expose some functions to HTML (if needed) */
-document.getElementById('add-component').addEventListener('click', agregarComponente);
-document.getElementById('send-form').addEventListener('click', enviarFormulario);
-
-/* End of reconstructed script */
-</script>
+            // Exponer funciones públicas necesarias para el HTML
+            return {
+                mostrarFormulario: mostrarFormulario,
+                agregarComponente: agregarComponente,
+                enviarFormulario: enviarFormulario,
+                mostrarCampos: mostrarCampos,
+                stopScanning: stopScanning, // Exponer para detener manualmente si es necesario
+            };
+        })();
+    </script>
 </body>
 </html>
