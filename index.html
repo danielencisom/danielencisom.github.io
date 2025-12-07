@@ -167,6 +167,31 @@
             top: 0;
             left: 0;
         }
+
+        /* --- ZOOM SLIDER --- */
+        #zoom-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 25;
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 12px;
+            border-radius: 20px;
+            display: none; /* Se muestra solo si la cámara soporta zoom */
+        }
+        #zoom-slider {
+            flex-grow: 1;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        .zoom-label {
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
         
         .dynamic-fields{display:grid;grid-template-columns:1fr;gap:12px;margin-top:4px;}
         .responsable-group{display:flex;gap:10px;}
@@ -402,6 +427,13 @@
                             <button id="toggle-torch" class="small-btn" title="Linterna">🔦</button>
                         </div>
                         <div class="scan-frame"></div>
+                        
+                        <!-- NUEVO: Control de Zoom -->
+                        <div id="zoom-controls">
+                            <span class="zoom-label">-</span>
+                            <input type="range" id="zoom-slider" min="1" max="5" step="0.1" value="1">
+                            <span class="zoom-label">+</span>
+                        </div>
                     </div>
                     <button id="retry-btn" class="btn-danger" style="display:none;" type="button">Volver a intentar escaneo</button>
                     <!-- FIN CONTENEDOR DE VIDEO -->
@@ -454,13 +486,14 @@
         /*******************************************************************
          * App: Registro de Equipos - Versión ANTERIOR + ANEXO TRASLADADO
          * v2: Funciones de escáner QuaggaJS implementadas.
+         * v3: Mejoras PRO (Zoom, FHD, Filtros) para códigos borrosos.
          *******************************************************************/
 
         window.app = (function () {
             // URL de Google Apps Script 
             const SHEET_URL = "https://script.google.com/macros/s/AKfycbzAK7pa6QFlDboMxXjMYjsBqIl03NWlt67LDeEoFEN1aZvjGRZYpjCGHplrKSqY1Mxb/exec";
 
-            // Estado interno (AÑADIDOS contadores para ups, camaraweb, mouse)
+            // Estado interno
             const state = {
                 contador: { cpu: 1, monitor: 1, teclado: 1, laptop: 1, docking: 1, ups: 1, camaraweb: 1, mouse: 1 }, 
                 componentes: [],
@@ -468,10 +501,11 @@
                 activeInput: null,
                 currentFacingMode: 'environment', 
                 torchAvailable: false,
+                zoomAvailable: false, // Nuevo estado para Zoom
                 lastScanTimestamp: 0
             };
 
-            // DOM refs (Sin cambios)
+            // DOM refs
             const dom = {
                 messageBox: document.getElementById('message-box'),
                 tipoCargo: document.getElementById('tipoCargo'),
@@ -495,12 +529,15 @@
                 sede: null,
                 dependencia: null,
                 estado: null, 
-                anexoKit: null, // Ref para Anexo general (asignado en init)
+                anexoKit: null,
                 overlay: document.getElementById('overlay'),
                 progressBar: document.getElementById('progress-bar'),
                 loaderSub: document.getElementById('loader-sub'),
                 switchCameraBtn: document.getElementById('switch-camera'),
-                toggleTorchBtn: document.getElementById('toggle-torch')
+                toggleTorchBtn: document.getElementById('toggle-torch'),
+                // Nuevo control de Zoom
+                zoomControls: document.getElementById('zoom-controls'),
+                zoomSlider: document.getElementById('zoom-slider')
             };
 
             /**********************
@@ -529,11 +566,8 @@
                 dom.messageBox.className = 'card';
                 dom.messageBox.classList.add(`msg-${type}`);
                 dom.messageBox.style.display = 'block';
-                // No ocultar mensajes de 'info' automáticamente
                 if (type !== 'info') {
-                     // Solo ocultar error y success después de un tiempo
                      setTimeout(() => { 
-                         // Verificar si el mensaje sigue siendo el mismo antes de ocultar
                          if (dom.messageBox.textContent === message) {
                              dom.messageBox.style.display = 'none'; 
                          }
@@ -1295,29 +1329,22 @@
                         type: "LiveStream",
                         target: dom.videoContainer,
                         constraints: {
-                            // CORRECCIÓN: Aumentar resolución para ayudar a Android/Xiaomi a enfocar mejor
-                            width: { min: 1280 },
-                            height: { min: 720 },
+                            // CORRECCIÓN PRO: Resolución Full HD para códigos borrosos/manchados
+                            width: { ideal: 1920 }, // Intentar 1080p si es posible
+                            height: { ideal: 1080 },
                             facingMode: facingMode,
                             aspectRatio: { min: 1, max: 2 }
                         },
                     },
                     locator: {
-                        patchSize: "medium",
-                        halfSample: true,
+                        // CORRECCIÓN PRO: PatchSize 'large' ayuda con imágenes borrosas o códigos grandes/cerca
+                        patchSize: "large",
+                        halfSample: false, // CRÍTICO: No reducir la imagen, usar todos los píxeles
                     },
                     decoder: {
-                        // CORRECCIÓN: Reducir lectores para evitar falsos positivos
-                        // Se han comentado los lectores "peligrosos" para IT (EAN, UPC, VIN)
                         readers: [
                             "code_128_reader", // Estándar para etiquetas de activos
-                            // "ean_reader", // Descomentar si escaneas productos de supermercado
-                            // "ean_8_reader",
                             "code_39_reader", // Otro estándar común en IT
-                            // "code_39_vin_reader", // CAUSA DE ERRORES: A menudo confunde códigos normales
-                            // "codabar_reader",
-                            // "upc_reader",
-                            // "upc_e_reader"
                         ],
                         debug: {
                             drawBoundingBox: true,
@@ -1333,31 +1360,38 @@
             
             // --- 2. Función de Detección (Callback) ---
             function onQuaggaDetected(data) {
-                // 'Debounce' - Evitar múltiples detecciones del mismo código
                 const now = Date.now();
-                if (now - state.lastScanTimestamp < 1500) { // Cooldown de 1.5 segundos
+                if (now - state.lastScanTimestamp < 1500) { 
                     return;
                 }
                 
                 if (data && data.codeResult && data.codeResult.code) {
-                    state.lastScanTimestamp = now;
-                    console.log("Código detectado:", data.codeResult.code);
+                    const code = data.codeResult.code;
 
-                    beep(0.08, 900, 0.08); // Sonido de éxito
-                    flashFrame(); // Feedback visual
+                    // VALIDACIÓN PRO: Filtrar ruido (ej: lecturas parciales de 1 o 2 caracteres)
+                    // Si buscas exactamente 12, podemos ser estrictos, pero para ser flexibles permitimos 8-15
+                    if (code.length < 5 || code.length > 20) {
+                        // Ignorar lecturas basura muy cortas o extremadamente largas
+                        console.log("Lectura ignorada por longitud inválida:", code);
+                        return;
+                    }
+
+                    state.lastScanTimestamp = now;
+                    console.log("Código detectado:", code);
+
+                    beep(0.08, 900, 0.08); 
+                    flashFrame(); 
 
                     if (state.activeInput) {
-                        state.activeInput.value = data.codeResult.code;
-                        // Disparar evento 'input' para que autosave() lo detecte
+                        state.activeInput.value = code;
                         state.activeInput.dispatchEvent(new Event('input', { bubbles: true }));
                     }
 
-                    // Limpiar error visual si lo tenía
                     if(state.activeInput && state.activeInput.parentElement.classList.contains('input-with-button')) {
                         state.activeInput.parentElement.classList.remove('input-invalid');
                     }
 
-                    stopScanning(false); // Detener escáner (false = no mostrar botón 'retry')
+                    stopScanning(false); 
                     showMessage("Código escaneado.", 'success');
                 }
             }
@@ -1371,17 +1405,14 @@
                     drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
                     
                     if (result) {
-                        // Dibuja los cuadros delimitadores
                         if (result.boxes) {
                             result.boxes.filter(box => box !== result.box).forEach(box => {
                                 Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
                             });
                         }
-                        // Dibuja el cuadro del código detectado
                         if (result.box) {
                             Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
                         }
-                        // Dibuja la línea del código
                         if (result.codeResult && result.codeResult.code) {
                             Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
                         }
@@ -1389,12 +1420,24 @@
                 }
             }
 
+            // --- NUEVO: Función para controlar Zoom ---
+            async function setZoom(value) {
+                if (!state.scanning) return;
+                try {
+                    const track = Quagga.CameraAccess.getActiveTrack();
+                    if (!track) return;
+                    await track.applyConstraints({
+                        advanced: [{ zoom: value }]
+                    });
+                } catch (e) {
+                    console.warn("Error setting zoom", e);
+                }
+            }
 
             // --- 4. Iniciar Escáner ---
             function startScanning() {
                 if (state.scanning) return;
                 
-                // Verificar permisos de cámara (buena práctica)
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     showMessage("Tu navegador no soporta el acceso a la cámara.", 'error');
                     return;
@@ -1403,7 +1446,8 @@
                 state.scanning = true;
                 dom.videoContainer.style.display = "block";
                 dom.retryBtn.style.display = "none";
-                dom.toggleTorchBtn.style.display = 'none'; // Ocultar hasta saber si está disponible
+                dom.toggleTorchBtn.style.display = 'none';
+                dom.zoomControls.style.display = 'none'; // Ocultar zoom hasta verificar soporte
 
                 const config = quaggaConfigForFacing(state.currentFacingMode);
 
@@ -1411,26 +1455,58 @@
                     if (err) {
                         console.error("Error al iniciar Quagga:", err);
                         showMessage(`Error de cámara: ${err.message}`, 'error');
-                        stopScanning(true); // Mostrar 'retry'
+                        stopScanning(true);
                         return;
                     }
                     console.log("Quagga iniciado correctamente.");
                     
-                    // Verificar capacidad de la linterna (torch)
-                    try {
-                        const capabilities = Quagga.CameraAccess.getActiveTrack().getCapabilities();
-                        if (capabilities && capabilities.torch) {
-                            state.torchAvailable = true;
-                            dom.toggleTorchBtn.style.display = 'inline-block';
+                    const track = Quagga.CameraAccess.getActiveTrack();
+                    if (track) {
+                        // 1. Obtener capacidades para Linterna y ZOOM
+                        try {
+                            const capabilities = track.getCapabilities();
+                            
+                            // Linterna
+                            if (capabilities.torch) {
+                                state.torchAvailable = true;
+                                dom.toggleTorchBtn.style.display = 'inline-block';
+                            }
+                            
+                            // ZOOM (Crítico para códigos borrosos)
+                            if (capabilities.zoom) {
+                                state.zoomAvailable = true;
+                                dom.zoomControls.style.display = 'flex';
+                                dom.zoomSlider.min = capabilities.zoom.min;
+                                dom.zoomSlider.max = capabilities.zoom.max;
+                                dom.zoomSlider.step = capabilities.zoom.step || 0.1;
+                                dom.zoomSlider.value = capabilities.zoom.min;
+                                
+                                dom.zoomSlider.oninput = (e) => setZoom(e.target.value);
+                            }
+
+                        } catch (e) {
+                            console.warn("Error leyendo capacidades:", e);
                         }
-                    } catch (e) {
-                        console.warn("No se pudo acceder a las capacidades de la linterna.", e);
-                        state.torchAvailable = false;
+
+                        // 2. Aplicar Pseudo-HDR (Enfoque y Exposición continuos)
+                        try {
+                            const constraints = { advanced: [] };
+                            // Intentar forzar enfoque continuo
+                            constraints.advanced.push({ focusMode: 'continuous' });
+                            // Intentar forzar exposición continua (ayuda con sombras/manchas)
+                            constraints.advanced.push({ exposureMode: 'continuous' });
+                            // Balance de blancos
+                            constraints.advanced.push({ whiteBalanceMode: 'continuous' });
+                            
+                            await track.applyConstraints(constraints);
+                            console.log("Constraints PRO aplicados (Enfoque/Exposición)");
+                        } catch (e) {
+                            console.warn("No se pudieron aplicar constraints avanzados:", e);
+                        }
                     }
 
                     Quagga.start();
                     
-                    // Registrar listeners
                     Quagga.onDetected(onQuaggaDetected);
                     Quagga.onProcessed(onQuaggaProcessed);
                 });
@@ -1438,7 +1514,7 @@
 
             // --- 5. Detener Escáner ---
             function stopScanning(showRetry = true) {
-                if (!state.scanning && !Quagga.CameraAccess.getActiveTrack()) return; // Ya está detenido
+                if (!state.scanning && !Quagga.CameraAccess.getActiveTrack()) return; 
                 
                 console.log("Deteniendo escáner...");
                 state.scanning = false;
@@ -1449,24 +1525,20 @@
                     console.warn("Error al detener Quagga (puede ser normal si no estaba iniciado):", e);
                 }
                 
-                // Quitar listeners
                 Quagga.offDetected(onQuaggaDetected);
                 Quagga.offProcessed(onQuaggaProcessed);
 
                 dom.videoContainer.style.display = "none";
                 dom.retryBtn.style.display = showRetry ? "block" : "none";
-                state.lastScanTimestamp = 0; // Resetear el cooldown
+                state.lastScanTimestamp = 0; 
             }
 
             // --- 6. Cambiar Cámara ---
             function switchCamera() {
                 if (state.scanning) {
-                    // Detener el stream actual antes de cambiar
                     stopScanning(false);
-                    // Cambiar el modo
                     state.currentFacingMode = (state.currentFacingMode === 'environment') ? 'user' : 'environment';
-                    // Reiniciar
-                    setTimeout(startScanning, 100); // Dar un respiro al navegador
+                    setTimeout(startScanning, 100); 
                 }
             }
 
@@ -1479,7 +1551,6 @@
                     const capabilities = track.getCapabilities();
 
                     if (capabilities.torch) {
-                        // Obtener el estado actual (un poco complejo)
                         const currentConstraints = track.getConstraints();
                         const isTorchOn = !!(currentConstraints.advanced && currentConstraints.advanced.find(c => c.torch)?.torch);
                         
